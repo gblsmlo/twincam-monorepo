@@ -1,0 +1,26 @@
+{
+  "name": "@twincam/storybook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook:build": "storybook build",
+    "storybook:test": "test-storybook --url http://127.0.0.1:6006",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@twincam/ui": "workspace:*",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "10.5.0",
+    "@storybook/addon-docs": "10.5.0",
+    "@storybook/react-vite": "10.5.0",
+    "@storybook/test-runner": "^0.24.4",
+    "@tailwindcss/vite": "4.2.2",
+    "storybook": "10.5.0",
+    "typescript": "^6.0.3",
+    "vite": "^7.1.0"
+  }
+}
