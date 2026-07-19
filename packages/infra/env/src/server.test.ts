@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
 const validRuntimeEnv = {
+  APP_URL: 'http://localhost:3000',
   BETTER_AUTH_SECRET: 'test-secret-with-at-least-thirty-two-chars',
   BETTER_AUTH_URL: 'http://localhost:3000',
   DATABASE_URL: 'postgresql://twincam:twincam@localhost:5432/twincam',
-  LEAD_SENSITIVE_DATA_KEY: Buffer.alloc(32, 1).toString('base64'),
   VITE_APP_ENV: 'development',
 }
 
