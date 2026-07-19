@@ -1,6 +1,5 @@
 # Twincam Monorepo
 
-[![CI](https://github.com/gblsmlo/twincam-monorepo/actions/workflows/ci.yml/badge.svg)](https://github.com/gblsmlo/twincam-monorepo/actions/workflows/ci.yml)
 [![Bun](https://img.shields.io/badge/Bun-1.3.14-f9f1e1?logo=bun&logoColor=000)](https://bun.sh)
 [![Node.js](https://img.shields.io/badge/Node.js-24.18.0-339933?logo=nodedotjs&logoColor=fff)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
