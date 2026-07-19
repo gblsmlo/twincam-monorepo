@@ -30,5 +30,17 @@ bun run dev
 
 Web runs at `http://localhost:3000` and API at `http://localhost:3001`.
 
+The seed creates a local workspace owner for development:
+
+- email: `owner@twincam.local`
+- password: `change-this-owner-password`
+
+These credentials and `BETTER_AUTH_SECRET` are development defaults only. Replace
+them before exposing any environment.
+
+Organization invitations are persisted in `notification_outbox`. Connect that
+outbox to the email provider selected by the new product; the starter deliberately
+does not choose a vendor.
+
 See `docs/architecture.md` for boundaries and `docs/commit-slices.md` for the
 extraction history and extension strategy.

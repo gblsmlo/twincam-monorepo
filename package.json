@@ -30,7 +30,6 @@
     "storybook:build": "bun --filter @twincam/storybook storybook:build",
     "storybook:test": "bun --filter @twincam/storybook storybook:test",
     "test": "bun run --parallel --if-present --workspaces test",
-    "test:db:rls": "bun --filter @twincam/infra-database test:rls",
     "toolchain:check": "sh scripts/check-toolchain.sh",
     "typecheck": "bun run --parallel --if-present --workspaces typecheck"
   },

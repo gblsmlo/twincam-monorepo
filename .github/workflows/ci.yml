@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: twincam
+          POSTGRES_PASSWORD: twincam
+          POSTGRES_USER: twincam
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U twincam -d twincam"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      APP_NAME: Twincam
+      APP_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: ci-only-secret-with-at-least-32-characters
+      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3000,http://localhost:3001
+      BETTER_AUTH_URL: http://localhost:3001
+      DATABASE_MIGRATION_URL: postgresql://twincam:twincam@localhost:5432/twincam
+      DATABASE_POOL_MAX: 5
+      DATABASE_URL: postgresql://twincam:twincam@localhost:5432/twincam
+      NODE_ENV: test
+      VITE_APP_ENV: test
+      VITE_APP_NAME: Twincam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: sh scripts/check-toolchain.sh
+      - run: bun install --frozen-lockfile
+      - run: bun run db:migrate
+      - run: bun run lint:ci
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run build
