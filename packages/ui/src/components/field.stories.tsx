@@ -16,10 +16,10 @@ type Story = StoryObj<typeof meta>
 
 export const WithDescription: Story = {
   render: () => (
-    <Field className='w-80' name='contact-name'>
-      <FieldLabel htmlFor='field-contact-name'>Nome do contato</FieldLabel>
-      <Input id='field-contact-name' placeholder='Como devemos chamar a pessoa?' />
-      <FieldDescription>Este nome sera exibido na lista de leads.</FieldDescription>
+    <Field className='w-80' name='display-name'>
+      <FieldLabel htmlFor='field-display-name'>Nome de exibição</FieldLabel>
+      <Input id='field-display-name' placeholder='Como devemos chamar você?' />
+      <FieldDescription>Este nome sera exibido no workspace.</FieldDescription>
     </Field>
   ),
 }
@@ -28,7 +28,7 @@ export const Disabled: Story = {
   render: () => (
     <Field className='w-80' disabled name='workspace-name'>
       <FieldLabel htmlFor='field-workspace-name'>Workspace</FieldLabel>
-      <Input defaultValue='Operacoes comerciais' id='field-workspace-name' />
+      <Input defaultValue='Acme' id='field-workspace-name' />
       <FieldDescription>O nome e gerenciado pela administracao.</FieldDescription>
     </Field>
   ),
@@ -36,9 +36,9 @@ export const Disabled: Story = {
 
 export const Invalid: Story = {
   render: () => (
-    <Field className='w-80' invalid name='contact-email'>
-      <FieldLabel htmlFor='field-contact-email'>E-mail</FieldLabel>
-      <Input aria-invalid defaultValue='contato@' id='field-contact-email' type='email' />
+    <Field className='w-80' invalid name='account-email'>
+      <FieldLabel htmlFor='field-account-email'>E-mail</FieldLabel>
+      <Input aria-invalid defaultValue='pessoa@' id='field-account-email' type='email' />
       <FieldError>Informe um e-mail valido.</FieldError>
     </Field>
   ),

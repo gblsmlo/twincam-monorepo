@@ -1,7 +1,7 @@
 # Twincam Monorepo
 
-Starter monorepo for tenant-aware SaaS products. It keeps the reusable technical
-foundation from Lemind while intentionally shipping without a business domain.
+Starter monorepo for tenant-aware SaaS products. It provides a reusable technical
+foundation while intentionally shipping without a business domain.
 
 The included product foundation is limited to:
 

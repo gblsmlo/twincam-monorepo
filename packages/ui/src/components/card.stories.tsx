@@ -43,8 +43,8 @@ export const Basic: Story = {
   render: () => (
     <Card className='w-96'>
       <CardHeader>
-        <CardTitle>Proxima acao</CardTitle>
-        <CardDescription>Lead prioritario para hoje.</CardDescription>
+        <CardTitle>Primeiros passos</CardTitle>
+        <CardDescription>Configure o seu workspace.</CardDescription>
         <CardAction>
           <Button aria-label='Mais opcoes' size='icon-sm' variant='ghost'>
             <MoreHorizontalIcon />
@@ -52,11 +52,11 @@ export const Basic: Story = {
         </CardAction>
       </CardHeader>
       <CardPanel>
-        <p className='text-sm'>Agendar a reuniao de qualificacao com Marina Costa.</p>
+        <p className='text-sm'>Convide a primeira pessoa para sua organização.</p>
       </CardPanel>
       <CardFooter className='justify-end gap-2'>
         <Button size='sm' variant='outline'>
-          Adiar
+          Depois
         </Button>
         <Button size='sm'>Concluir</Button>
       </CardFooter>
@@ -91,19 +91,19 @@ export const FramedSections: Story = {
   render: () => (
     <CardFrame className='w-96'>
       <CardFrameHeader>
-        <CardFrameTitle>Resumo do lead</CardFrameTitle>
+        <CardFrameTitle>Resumo do workspace</CardFrameTitle>
         <CardFrameDescription>Dados atualizados agora.</CardFrameDescription>
       </CardFrameHeader>
       <Card>
         <CardPanel>
           <dl className='grid grid-cols-2 gap-3 text-sm'>
             <div>
-              <dt className='text-muted-foreground'>Etapa</dt>
-              <dd>Qualificacao</dd>
+              <dt className='text-muted-foreground'>Plano</dt>
+              <dd>Starter</dd>
             </div>
             <div>
-              <dt className='text-muted-foreground'>Prioridade</dt>
-              <dd>Alta</dd>
+              <dt className='text-muted-foreground'>Membros</dt>
+              <dd>3</dd>
             </div>
           </dl>
         </CardPanel>

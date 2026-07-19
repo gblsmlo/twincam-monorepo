@@ -49,7 +49,7 @@ export const GroupedOptions: Story = {
       </SelectTrigger>
       <SelectPopup>
         <SelectGroup>
-          <SelectGroupLabel>Equipe comercial</SelectGroupLabel>
+          <SelectGroupLabel>Membros</SelectGroupLabel>
           <SelectItem value='marina'>Marina Costa</SelectItem>
           <SelectItem value='rafael'>Rafael Nunes</SelectItem>
         </SelectGroup>
@@ -128,7 +128,7 @@ export const Invalid: Story = {
           <SelectItem value='high'>Alta</SelectItem>
         </SelectPopup>
       </Select>
-      <FieldError>Escolha a prioridade do lead.</FieldError>
+      <FieldError>Escolha uma prioridade.</FieldError>
     </Field>
   ),
 }

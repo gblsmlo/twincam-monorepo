@@ -28,7 +28,7 @@ export const FilterForm: Story = {
       <PopoverPopup align='start' className='w-72'>
         <div className='flex flex-col gap-3'>
           <div className='space-y-1'>
-            <PopoverTitle>Filtrar leads</PopoverTitle>
+            <PopoverTitle>Filtrar registros</PopoverTitle>
             <PopoverDescription>Refine a lista sem sair da visualizacao atual.</PopoverDescription>
           </div>
           <div className='flex justify-end gap-2'>

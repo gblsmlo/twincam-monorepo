@@ -3,14 +3,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ScrollArea } from './scroll-area'
 
 const activities = [
-  'Contato criado a partir do formulario do site.',
-  'Marina Costa assumiu a responsabilidade pelo lead.',
-  'Prioridade alterada para alta.',
-  'Tarefa de qualificacao agendada para hoje.',
-  'Nota adicionada com o contexto da primeira conversa.',
-  'Lead movido para a etapa de proposta.',
-  'Documento comercial anexado ao registro.',
-  'Reuniao de retorno confirmada para sexta-feira.',
+  'Workspace criado.',
+  'Marina Costa aceitou o convite.',
+  'Autenticação em dois fatores ativada.',
+  'Nome da organização atualizado.',
+  'Novo administrador adicionado.',
+  'Sessão iniciada em um novo dispositivo.',
+  'Convite pendente cancelado.',
+  'Política de acesso revisada.',
 ]
 
 const meta = {

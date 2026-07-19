@@ -19,7 +19,7 @@ export const Basic: Story = {
   },
 }
 
-export const LeadCard: Story = {
+export const ProfileCard: Story = {
   render: () => (
     <div className='w-96 space-y-4 rounded-xl border p-5'>
       <div className='flex items-center gap-3'>

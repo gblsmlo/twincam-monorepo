@@ -30,11 +30,11 @@ export const FullPath: Story = {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href='#leads'>Leads</BreadcrumbLink>
+          <BreadcrumbLink href='#settings'>Configurações</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>Marina Costa</BreadcrumbPage>
+          <BreadcrumbPage>Membros</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
@@ -54,11 +54,11 @@ export const Collapsed: Story = {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href='#leads'>Leads</BreadcrumbLink>
+          <BreadcrumbLink href='#settings'>Configurações</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>Marina Costa</BreadcrumbPage>
+          <BreadcrumbPage>Membros</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

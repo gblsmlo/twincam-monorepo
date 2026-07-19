@@ -2,7 +2,7 @@
 
 Este pacote concentra primitives compartilhadas e componentes copiados de Coss/Base UI.
 As dependencias abaixo ficam pinadas para reduzir upgrades silenciosos que possam
-quebrar os fluxos P0 da aplicacao.
+quebrar o shell autenticado ou os fluxos de identidade e organização.
 
 ## Dependencias pinadas
 
@@ -19,7 +19,7 @@ quebrar os fluxos P0 da aplicacao.
 ## Regra de manutenção
 
 - Atualizar essas dependências somente em PR revisado;
-- Validar intake, leads e inbox quando houver bump;
+- Validar autenticação, onboarding de organização e o shell quando houver bump;
 - Registrar qualquer impacto visual ou de acessibilidade no review;
 - Para o passo a passo de revisão e verificação, consulte [UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md).
 
