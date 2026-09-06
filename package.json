@@ -41,8 +41,11 @@
     "storybook:build": "bun --filter @twincam/storybook storybook:build",
     "storybook:test": "bun --filter @twincam/storybook storybook:test",
     "test": "bun run --filter \"@twincam/*\" test",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
+    "test:e2e:ui": "playwright test --ui --project=chromium --ui-port=0",
     "toolchain:check": "sh scripts/check-toolchain.sh",
-    "typecheck": "bun run --parallel --filter \"@twincam/*\" typecheck"
+    "typecheck": "bun run --parallel --filter \"@twincam/*\" typecheck && tsc -p scripts/tsconfig.json"
   },
   "config": {
     "commitizen": {

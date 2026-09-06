@@ -5,6 +5,11 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+const apiPort = Number(process.env.API_PORT ?? 3001)
+const webPort = Number(process.env.WEB_PORT ?? 3000)
+const webHost = process.env.WEB_HOST ?? 'localhost'
+const apiTarget = `http://127.0.0.1:${apiPort}`
+
 export default defineConfig({
   envDir: '../..',
   resolve: {
@@ -15,11 +20,12 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    host: webHost,
+    port: webPort,
     strictPort: true,
     proxy: {
-      '/api': 'http://127.0.0.1:3001',
-      '/health': 'http://127.0.0.1:3001',
+      '/api': apiTarget,
+      '/health': apiTarget,
     },
   },
   plugins: [tailwindcss(), tanstackStart(), react()],
