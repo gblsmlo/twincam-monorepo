@@ -2,9 +2,9 @@
 
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { cn } from '@twincam/ui/lib/utils'
 import { type VariantProps, cva } from 'class-variance-authority'
 import type React from 'react'
+import { cn } from '../lib/utils'
 
 export const cardVariants = cva(
   'relative flex flex-col rounded-lg border bg-card not-dark:bg-clip-padding text-card-foreground shadow-xs/6 before:pointer-events-none before:absolute before:inset-0',

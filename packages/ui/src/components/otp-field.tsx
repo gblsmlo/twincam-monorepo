@@ -1,9 +1,9 @@
 'use client'
 
 import { OTPField as OTPFieldPrimitive } from '@base-ui/react/otp-field'
-import { Separator } from '@twincam/ui/components/separator'
-import { cn } from '@twincam/ui/lib/utils'
 import type * as React from 'react'
+import { cn } from '../lib/utils'
+import { Separator } from './separator'
 
 export function OTPField({
   className,

@@ -1,6 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { authClient } from '@twincam/auth/client'
-import { Button } from '@twincam/ui'
+import { Button } from '@twincam/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@twincam/ui/components/card'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@twincam/ui/components/field'
 import { Input } from '@twincam/ui/components/input'

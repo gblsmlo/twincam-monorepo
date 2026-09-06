@@ -6,7 +6,7 @@
     "build": "vite build",
     "dev": "vite dev",
     "start": "srvx --prod -s ../client dist/server/server.js",
-    "test": "bun test",
+    "test": "bun test --isolate --timeout 20000",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

@@ -2,24 +2,18 @@
 
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { Button } from '@twincam/ui/components/button'
-import { Input } from '@twincam/ui/components/input'
-import { ScrollArea } from '@twincam/ui/components/scroll-area'
-import { Separator } from '@twincam/ui/components/separator'
-import {
-  Sheet,
-  SheetDescription,
-  SheetHeader,
-  SheetPopup,
-  SheetTitle,
-} from '@twincam/ui/components/sheet'
-import { Skeleton } from '@twincam/ui/components/skeleton'
-import { Tooltip, TooltipPopup, TooltipTrigger } from '@twincam/ui/components/tooltip'
-import { useMediaQuery } from '@twincam/ui/hooks/use-media-query'
-import { cn } from '@twincam/ui/lib/utils'
 import { type VariantProps, cva } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 import * as React from 'react'
+import { useMediaQuery } from '../hooks/use-media-query'
+import { cn } from '../lib/utils'
+import { Button } from './button'
+import { Input } from './input'
+import { ScrollArea } from './scroll-area'
+import { Separator } from './separator'
+import { Sheet, SheetDescription, SheetHeader, SheetPopup, SheetTitle } from './sheet'
+import { Skeleton } from './skeleton'
+import { Tooltip, TooltipPopup, TooltipTrigger } from './tooltip'
 
 const SIDEBAR_COOKIE_NAME: string = '@twincam:sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE: number = 60 * 60 * 24 * 7

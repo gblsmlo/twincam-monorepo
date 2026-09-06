@@ -2,11 +2,11 @@
 
 import type { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
 import { ToggleGroup as ToggleGroupPrimitive } from '@base-ui/react/toggle-group'
-import { Separator } from '@twincam/ui/components/separator'
-import { Toggle as ToggleComponent, type toggleVariants } from '@twincam/ui/components/toggle'
-import { cn } from '@twincam/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+import { cn } from '../lib/utils'
+import { Separator } from './separator'
+import { Toggle as ToggleComponent, type toggleVariants } from './toggle'
 
 export const ToggleGroupContext: React.Context<VariantProps<typeof toggleVariants>> =
   React.createContext<VariantProps<typeof toggleVariants>>({

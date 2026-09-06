@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '@twincam/ui'
+import { Button } from '@twincam/ui/components/button'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@twincam/ui/components/field'
 import { Form } from '@twincam/ui/components/form'
 import { Input } from '@twincam/ui/components/input'

@@ -1,5 +1,5 @@
 import { healthResponseSchema } from '@twincam/core/contracts/health'
-import { traceHttpRequest } from '@twincam/observability'
+import { traceHttpRequest } from '@twincam/observability/runtime'
 import { Elysia } from 'elysia'
 
 import { createAuthHandlerRoutes, createAuthRoutes } from './features/auth'

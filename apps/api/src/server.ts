@@ -1,5 +1,5 @@
 import { serverEnv } from '@twincam/infra-env/server'
-import { logEvent } from '@twincam/observability'
+import { logEvent } from '@twincam/observability/runtime'
 
 import { createApp } from './app'
 import { createOpenAPIPlugin } from './openapi'

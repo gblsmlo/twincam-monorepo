@@ -3,7 +3,7 @@ import {
   signUpRequestSchema,
   signUpResponseSchema,
 } from '@twincam/core/contracts/auth'
-import { logEvent } from '@twincam/observability'
+import { logEvent } from '@twincam/observability/runtime'
 import { Elysia } from 'elysia'
 
 import { mapValidationError } from '../../libs/http-errors'

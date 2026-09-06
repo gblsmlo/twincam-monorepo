@@ -1,9 +1,9 @@
 'use client'
 
 import { Input as InputPrimitive } from '@base-ui/react/input'
-import { cn } from '@twincam/ui/lib/utils'
 import type * as React from 'react'
 import { forwardRef } from 'react'
+import { cn } from '../lib/utils'
 
 export type InputProps = Omit<
   InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,

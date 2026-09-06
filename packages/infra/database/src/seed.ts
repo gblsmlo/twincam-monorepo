@@ -1,4 +1,4 @@
-import { logEvent } from '@twincam/observability'
+import { logEvent } from '@twincam/observability/runtime'
 import { hashPassword } from 'better-auth/crypto'
 import { sql } from 'drizzle-orm'
 
