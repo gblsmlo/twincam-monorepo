@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@features': fileURLToPath(new URL('./src/features', import.meta.url)),
+      '@web': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {

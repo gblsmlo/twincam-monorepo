@@ -21,6 +21,7 @@ const config: StorybookConfig = {
       resolve: {
         alias: {
           '@features': fileURLToPath(new URL('../../web/src/features', import.meta.url)),
+          '@web': fileURLToPath(new URL('../../web/src', import.meta.url)),
         },
       },
     }),

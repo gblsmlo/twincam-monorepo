@@ -1,5 +1,5 @@
-import { auth } from '@twincam/auth/server'
 import { logEvent } from '@twincam/observability'
+import { hashPassword } from 'better-auth/crypto'
 import { sql } from 'drizzle-orm'
 
 import { db } from './client'
@@ -9,8 +9,10 @@ const USER_ID = 'seed_owner'
 const OWNER_EMAIL = 'owner@twincam.local'
 const OWNER_PASSWORD = 'change-this-owner-password'
 
-const context = await auth.$context
-const password = await context.password.hash(OWNER_PASSWORD)
+// `better-auth/crypto` produces the same hash the auth server verifies, without
+// pulling `@twincam/auth/server` into this package: the database never depends
+// on auth, otherwise auth -> database -> auth becomes a cycle.
+const password = await hashPassword(OWNER_PASSWORD)
 
 await db.execute(sql`
   insert into organizations (id, name, slug, created_at)

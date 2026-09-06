@@ -41,7 +41,9 @@ export const resolveSessionActorContext: ActorResolver = async (request) => {
       .where(eq(members.userId, session.user.id))
       .limit(2)
 
-    if (memberships.length !== 1) {
+    const [onlyMembership] = memberships
+
+    if (!onlyMembership || memberships.length > 1) {
       return {
         ok: false,
         status: 403,
@@ -50,7 +52,7 @@ export const resolveSessionActorContext: ActorResolver = async (request) => {
       }
     }
 
-    organizationId = memberships[0].organizationId
+    organizationId = onlyMembership.organizationId
 
     await db
       .update(sessions)

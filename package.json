@@ -4,13 +4,22 @@
   "private": true,
   "type": "module",
   "packageManager": "bun@1.3.14",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "packages/infra/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "packages/infra/*"
+    ],
+    "catalog": {
+      "@base-ui/react": "1.6.0",
+      "class-variance-authority": "0.7.1",
+      "lucide-react": "1.21.0",
+      "react": "19.1.1",
+      "react-dom": "19.1.1"
+    }
+  },
   "scripts": {
-    "build": "bun run --parallel --if-present --workspaces build",
+    "build": "bun run --parallel --filter \"@twincam/*\" build",
     "build:api": "bun --filter @twincam/api build",
     "build:web": "bun --filter @twincam/web build",
     "commit": "cz",
@@ -23,15 +32,17 @@
     "dev:api": "bun --filter @twincam/api dev",
     "dev:web": "bun --filter @twincam/web dev",
     "lint": "biome check --write .",
-    "lint:ci": "biome ci .",
+    "lint:ci": "biome ci --error-on-warnings .",
+    "lint:format": "biome format --write .",
     "lint:staged": "biome check --staged --no-errors-on-unmatched --write .",
+    "lint:unsafe": "biome check --unsafe --write .",
     "prepare": "husky",
     "storybook": "bun --filter @twincam/storybook storybook",
     "storybook:build": "bun --filter @twincam/storybook storybook:build",
     "storybook:test": "bun --filter @twincam/storybook storybook:test",
-    "test": "bun run --parallel --if-present --workspaces test",
+    "test": "bun run --filter \"@twincam/*\" test",
     "toolchain:check": "sh scripts/check-toolchain.sh",
-    "typecheck": "bun run --parallel --if-present --workspaces typecheck"
+    "typecheck": "bun run --parallel --filter \"@twincam/*\" typecheck"
   },
   "config": {
     "commitizen": {

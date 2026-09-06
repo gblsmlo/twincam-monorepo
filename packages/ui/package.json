@@ -7,13 +7,13 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@base-ui/react": "1.6.0",
+    "@base-ui/react": "catalog:",
     "@fontsource-variable/inter": "5.2.8",
-    "class-variance-authority": "0.7.1",
+    "class-variance-authority": "catalog:",
     "clsx": "2.1.1",
     "geist": "1.7.2",
-    "lucide-react": "1.21.0",
-    "react": "19.1.1",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
     "react-day-picker": "10.0.1",
     "tailwind-merge": "3.6.0"
   },

@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@twincam/ui": "workspace:*",
-    "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "10.5.0",

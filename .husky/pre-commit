@@ -1,4 +1,4 @@
 set -e
-sh scripts/check-toolchain.sh
+. scripts/check-toolchain.sh
 bun run lint:staged
 git update-index --again
