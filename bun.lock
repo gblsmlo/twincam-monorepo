@@ -167,6 +167,23 @@
         "zod": "^4.1.12",
       },
     },
+    "packages/patterns": {
+      "name": "@twincam/patterns",
+      "dependencies": {
+        "@twincam/ui": "workspace:*",
+        "lucide-react": "catalog:",
+      },
+      "devDependencies": {
+        "@base-ui/react": "catalog:",
+        "@testing-library/react": "^16.3.0",
+        "jsdom": "^26.1.0",
+        "react": "catalog:",
+      },
+      "peerDependencies": {
+        "@base-ui/react": "catalog:",
+        "react": "catalog:",
+      },
+    },
     "packages/ui": {
       "name": "@twincam/ui",
       "dependencies": {
@@ -908,6 +925,8 @@
     "@twincam/infra-env": ["@twincam/infra-env@workspace:packages/infra/env"],
 
     "@twincam/observability": ["@twincam/observability@workspace:packages/observability"],
+
+    "@twincam/patterns": ["@twincam/patterns@workspace:packages/patterns"],
 
     "@twincam/storybook": ["@twincam/storybook@workspace:apps/storybook"],
 
