@@ -1,23 +1,23 @@
-import { auth } from '@twincam/auth/server'
-import { logEvent, traceHttpRequest } from '@twincam/observability'
-import { Elysia } from 'elysia'
-import { createAuthRoutes } from './routes/auth'
-import { createHealthResponse } from './routes/health'
-import { createUserRoutes } from './routes/users'
+import { serverEnv } from '@twincam/infra-env/server'
+import { logEvent } from '@twincam/observability'
 
-const app = new Elysia()
-  .get('/health', ({ request }) => traceHttpRequest(request, () => createHealthResponse()))
-  .all('/api/auth/*', ({ request }) => traceHttpRequest(request, () => auth.handler(request)))
-  .use(createAuthRoutes())
-  .use(createUserRoutes())
-  .listen(3001)
+import { createApp } from './app'
+import { createOpenAPIPlugin } from './openapi'
+
+export type { App } from './app'
+
+const baseApp = createApp()
+
+const app = (
+  serverEnv.NODE_ENV === 'development' ? baseApp.use(createOpenAPIPlugin()) : baseApp
+).listen(serverEnv.API_PORT)
 
 logEvent({
   level: 'info',
   message: 'api.started',
   context: {
     hostname: app.server?.hostname ?? '0.0.0.0',
-    port: app.server?.port ?? 3001,
+    port: app.server?.port ?? serverEnv.API_PORT,
     service: 'api',
   },
 })

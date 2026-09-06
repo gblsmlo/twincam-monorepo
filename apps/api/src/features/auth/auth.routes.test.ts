@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import type { LogEvent } from '@twincam/observability'
 import { Elysia } from 'elysia'
 
-import { createAuthRoutes } from './auth'
+import { createAuthRoutes } from './auth.routes'
 
 type AuthRouteDependencies = NonNullable<Parameters<typeof createAuthRoutes>[0]>
 
@@ -38,7 +38,7 @@ const createDependencies = (
 }
 
 const signUpRequest = (body: unknown) =>
-  new Request('http://localhost/api/v1/auth/sign-up', {
+  new Request('http://localhost/api/auth/sign-up', {
     body: JSON.stringify(body),
     headers,
     method: 'POST',

@@ -89,7 +89,7 @@ describe('fetchCurrentUser', () => {
 
     await fetchCurrentUser()
 
-    expect(capturedInput).toBe('http://localhost/api/v1/me')
+    expect(capturedInput).toBe('http://localhost/api/me')
   })
 
   test('identifies an absent session from a 401 response', async () => {

@@ -21,7 +21,7 @@ const resolveRequest = (request?: Request): Request | undefined => {
 }
 
 const currentUserEndpoint = (request?: Request) =>
-  request ? new URL('/api/v1/me', request.url).toString() : '/api/v1/me'
+  request ? new URL('/api/me', request.url).toString() : '/api/me'
 
 export const fetchCurrentUser = async (request?: Request): Promise<CurrentUserResponse> => {
   const resolvedRequest = resolveRequest(request)

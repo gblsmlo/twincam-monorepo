@@ -8,7 +8,7 @@ import {
 import { AuthRequestError } from './errors'
 
 export async function signUp(payload: SignUpRequest): Promise<SignUpResponse> {
-  const response = await fetch('/api/v1/auth/sign-up', {
+  const response = await fetch('/api/auth/sign-up', {
     body: JSON.stringify(payload),
     credentials: 'include',
     headers: {

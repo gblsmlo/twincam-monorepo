@@ -1,6 +1,12 @@
-import { type SignUpRequest, signUpRequestSchema } from '@twincam/core/contracts/auth'
+import {
+  signUpErrorResponseSchema,
+  signUpRequestSchema,
+  signUpResponseSchema,
+} from '@twincam/core/contracts/auth'
 import { logEvent } from '@twincam/observability'
 import { Elysia } from 'elysia'
+
+import { mapValidationError } from '../../libs/http-errors'
 
 interface AuthRouteUser {
   email: string
@@ -18,13 +24,6 @@ interface AuthRouteDependencies {
   }) => Promise<AuthRouteUser>
 }
 
-const badRequest = (message: string) => ({
-  error: {
-    code: 'invalid_request',
-    message,
-  },
-})
-
 const conflict = (message: string) => ({
   error: {
     code: 'conflict',
@@ -38,6 +37,12 @@ const internalError = () => ({
     message: 'Nao foi possivel criar a conta agora. Tente novamente em alguns instantes.',
   },
 })
+
+const errorStatuses = {
+  400: signUpErrorResponseSchema,
+  409: signUpErrorResponseSchema,
+  500: signUpErrorResponseSchema,
+} as const
 
 const createSignUpResponse = (user: AuthRouteUser) => ({
   message: 'Conta criada com sucesso. Entre para continuar.',
@@ -72,84 +77,78 @@ const defaultDependencies: AuthRouteDependencies = {
   },
   log: logEvent,
   async provisionUser(input) {
-    const { provisionVerifiedCredentialUser } = await import('../auth/provision-user')
+    const { provisionVerifiedCredentialUser } = await import('./provision-user')
     return provisionVerifiedCredentialUser(input)
   },
 }
 
 export const createAuthRoutes = (dependencies: AuthRouteDependencies = defaultDependencies) =>
-  new Elysia({ prefix: '/api/v1/auth' }).post('/sign-up', async ({ request, set }) => {
-    let body: SignUpRequest
+  new Elysia({ prefix: '/api/auth' }).onError(mapValidationError).post(
+    '/sign-up',
+    async ({ body, set }) => {
+      const email = body.email.toLowerCase()
+      const existingUser = await dependencies.findUserByEmail(email)
 
-    try {
-      body = signUpRequestSchema.parse(await request.json())
-    } catch {
-      dependencies.log({
-        level: 'warn',
-        message: 'auth.sign_up.invalid_body',
-      })
-      set.status = 400
-      return badRequest('Revise os dados do cadastro e tente novamente.')
-    }
-
-    const email = body.email.toLowerCase()
-    const existingUser = await dependencies.findUserByEmail(email)
-
-    if (existingUser) {
-      dependencies.log({
-        level: 'warn',
-        message: 'auth.sign_up.conflict',
-        context: {
-          emailDomain: emailDomain(email),
-        },
-      })
-      set.status = 409
-      return conflict('Ja existe uma conta com este e-mail.')
-    }
-
-    try {
-      const user = await dependencies.provisionUser({
-        email,
-        name: body.name,
-        password: body.password,
-      })
-
-      dependencies.log({
-        level: 'info',
-        message: 'auth.sign_up.created',
-        context: {
-          emailDomain: emailDomain(email),
-          userId: user.id,
-        },
-      })
-
-      set.status = 201
-      return createSignUpResponse(user)
-    } catch (error) {
-      if (isDuplicateUserError(error)) {
+      if (existingUser) {
         dependencies.log({
           level: 'warn',
-          message: 'auth.sign_up.provision_conflict',
+          message: 'auth.sign_up.conflict',
+          context: {
+            emailDomain: emailDomain(email),
+          },
+        })
+        set.status = 409
+        return conflict('Ja existe uma conta com este e-mail.')
+      }
+
+      try {
+        const user = await dependencies.provisionUser({
+          email,
+          name: body.name,
+          password: body.password,
+        })
+
+        dependencies.log({
+          level: 'info',
+          message: 'auth.sign_up.created',
+          context: {
+            emailDomain: emailDomain(email),
+            userId: user.id,
+          },
+        })
+
+        set.status = 201
+        return createSignUpResponse(user)
+      } catch (error) {
+        if (isDuplicateUserError(error)) {
+          dependencies.log({
+            level: 'warn',
+            message: 'auth.sign_up.provision_conflict',
+            context: {
+              emailDomain: emailDomain(email),
+              error,
+            },
+          })
+
+          set.status = 409
+          return conflict('Ja existe uma conta com este e-mail.')
+        }
+
+        dependencies.log({
+          level: 'error',
+          message: 'auth.sign_up.provision_failed',
           context: {
             emailDomain: emailDomain(email),
             error,
           },
         })
 
-        set.status = 409
-        return conflict('Ja existe uma conta com este e-mail.')
+        set.status = 500
+        return internalError()
       }
-
-      dependencies.log({
-        level: 'error',
-        message: 'auth.sign_up.provision_failed',
-        context: {
-          emailDomain: emailDomain(email),
-          error,
-        },
-      })
-
-      set.status = 500
-      return internalError()
-    }
-  })
+    },
+    {
+      body: signUpRequestSchema,
+      response: { 201: signUpResponseSchema, ...errorStatuses },
+    },
+  )
