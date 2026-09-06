@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { toastManager } from '@twincam/ui/components/toast'
 import { useForm } from 'react-hook-form'
+import { authFeedback } from '../feedback'
 import { requestPasswordReset } from '../http/request-password-reset'
 import {
   type ForgottenPasswordFormInput,
@@ -38,11 +39,7 @@ export function useRequestPasswordResetForm({
         redirectTo,
       })
 
-      toastManager.add({
-        description: 'Se o e-mail existir, enviamos um link para redefinir a senha.',
-        title: 'Link enviado',
-        type: 'success',
-      })
+      toastManager.add(authFeedback.requestPasswordReset.success)
 
       await navigate({
         search: { email: values.email },
@@ -51,11 +48,7 @@ export function useRequestPasswordResetForm({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Nao foi possivel enviar o link.'
 
-      toastManager.add({
-        description: message,
-        title: 'Falha ao enviar link',
-        type: 'error',
-      })
+      toastManager.add(authFeedback.requestPasswordReset.failure(message))
     }
   })
 

@@ -1,8 +1,8 @@
 'use client'
 
 import { Field as FieldPrimitive } from '@base-ui/react/field'
-import { cn } from '@twincam/ui/lib/utils'
 import type React from 'react'
+import { cn } from '../lib/utils'
 
 export function Field({ className, ...props }: FieldPrimitive.Root.Props): React.ReactElement {
   return (
@@ -49,12 +49,18 @@ export function FieldDescription({
 
 export function FieldError({
   className,
+  match,
   ...props
 }: FieldPrimitive.Error.Props): React.ReactElement {
+  // Base UI shows the error only from the field's native validation. Here the
+  // validation comes from the schema and arrives as children, so an explicit
+  // message is itself the display condition; without one the primitive default
+  // still applies.
   return (
     <FieldPrimitive.Error
       className={cn('text-destructive-foreground text-xs', className)}
       data-slot='field-error'
+      match={match ?? (Boolean(props.children) || undefined)}
       {...props}
     />
   )

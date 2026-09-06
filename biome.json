@@ -46,6 +46,9 @@
       "preset": "recommended",
       "suspicious": {
         "noConsole": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
@@ -53,5 +56,17 @@
     "clientKind": "git",
     "enabled": true,
     "useIgnoreFile": true
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.test.ts", "**/*.test.tsx"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noDynamicNamespaceImportAccess": "off"
+          }
+        }
+      }
+    }
+  ]
 }

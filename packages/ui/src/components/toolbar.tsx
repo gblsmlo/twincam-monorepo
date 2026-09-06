@@ -1,8 +1,8 @@
 'use client'
 
 import { Toolbar as ToolbarPrimitive } from '@base-ui/react/toolbar'
-import { cn } from '@twincam/ui/lib/utils'
 import type React from 'react'
+import { cn } from '../lib/utils'
 
 export interface ToolbarProps extends ToolbarPrimitive.Root.Props {
   variant?: 'default' | 'plain'

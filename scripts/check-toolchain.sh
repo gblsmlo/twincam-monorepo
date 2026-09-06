@@ -33,10 +33,11 @@ if [ "$TIMEOUT_SECONDS" -lt 1 ]; then
   fail "TOOLCHAIN_TIMEOUT_SECONDS must be at least 1"
 fi
 
-script_dir="$(CDPATH= cd "$(dirname "$0")" && pwd)" ||
-  fail "could not resolve script directory"
-repo_root="$(CDPATH= cd "$script_dir/.." && pwd)" ||
-  fail "could not resolve repository root"
+# $0 is not reliable here: .husky/pre-commit and pre-push source this
+# script, and a sourced file inherits the caller's $0 instead of
+# its own path.
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" ||
+  fail "could not resolve repository root (not inside a git work tree?)"
 
 timeout_cmd=""
 command -v timeout >/dev/null 2>&1 && timeout_cmd="timeout"
@@ -156,8 +157,53 @@ require_command() {
   command -v "$name" >/dev/null 2>&1 || fail "$name is not available in PATH"
 }
 
+node_matches() {
+  command -v node >/dev/null 2>&1 || return 1
+  current="$(node --version 2>/dev/null | tr -d '[:space:]')"
+  [ "${current#v}" = "$1" ]
+}
+
+# PATH resolution alone can't be trusted to carry the pinned Node into a shell
+# that defaults elsewhere: activate it via whichever manager the
+# machine has, sourced from the caller's hooks so the switch survives past
+# this script's own process.
+activate_pinned_node() {
+  target="$1"
+
+  node_matches "$target" && return 0
+
+  if command -v fnm >/dev/null 2>&1; then
+    eval "$(fnm env --shell bash)"
+    fnm use "$target" >/dev/null 2>&1 && node_matches "$target" && return 0
+  fi
+
+  if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck disable=SC1091
+    . "$NVM_DIR/nvm.sh"
+    nvm use "$target" >/dev/null 2>&1 && node_matches "$target" && return 0
+  fi
+
+  return 1
+}
+
+node_install_hint() {
+  target="$1"
+
+  if command -v fnm >/dev/null 2>&1; then
+    printf 'fnm install %s' "$target"
+    return
+  fi
+
+  if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    printf 'nvm install %s' "$target"
+    return
+  fi
+
+  printf 'install fnm or nvm, then install Node %s' "$target"
+}
+
 require_command bun
-require_command node
 
 bun_path="$(command -v bun)"
 case "$bun_path" in
@@ -175,14 +221,20 @@ if [ -n "$expected_bun" ] && [ "$bun_version" != "$expected_bun" ]; then
   fail "expected Bun $expected_bun, got $bun_version from $bun_path"
 fi
 
+expected_node_version="$(required_node_version)"
+
+activate_pinned_node "$expected_node_version" ||
+  fail "Node $expected_node_version is not active and not installed in fnm or nvm. Run: $(node_install_hint "$expected_node_version")"
+
 node_version_file="$(make_temp_file)"
 run_with_timeout "node --version" "$node_version_file" node --version
 node_version="$(cat "$node_version_file")"
 node_version="${node_version#v}"
-expected_node_version="$(required_node_version)"
 
 if [ "$node_version" != "$expected_node_version" ]; then
   fail "expected Node $expected_node_version LTS, got v$node_version"
 fi
 
-exit 0
+cleanup
+trap - EXIT INT TERM
+set +u

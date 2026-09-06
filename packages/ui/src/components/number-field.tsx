@@ -1,10 +1,10 @@
 'use client'
 
 import { NumberField as NumberFieldPrimitive } from '@base-ui/react/number-field'
-import { Label } from '@twincam/ui/components/label'
-import { cn } from '@twincam/ui/lib/utils'
 import { MinusIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
+import { cn } from '../lib/utils'
+import { Label } from './label'
 
 export const NumberFieldContext: React.Context<{
   fieldId: string

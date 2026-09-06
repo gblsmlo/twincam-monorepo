@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { toastManager } from '@twincam/ui/components/toast'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { authFeedback } from '../feedback'
 import { signIn } from '../http/sign-in'
 import {
   type SignInFormInput,
@@ -47,21 +48,13 @@ export function useSignInForm({ initialEmail, redirectTo }: Readonly<UseSignInFo
         return
       }
 
-      toastManager.add({
-        description: 'Sessao iniciada com sucesso.',
-        title: 'Bem-vindo de volta',
-        type: 'success',
-      })
+      toastManager.add(authFeedback.signIn.success)
 
       await navigate({ to: redirectTo })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Nao foi possivel autenticar.'
 
-      toastManager.add({
-        description: message,
-        title: 'Falha ao entrar',
-        type: 'error',
-      })
+      toastManager.add(authFeedback.signIn.failure(message))
     }
   })
 

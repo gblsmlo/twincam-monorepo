@@ -1,11 +1,11 @@
 'use client'
 
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox'
-import { Input } from '@twincam/ui/components/input'
-import { ScrollArea } from '@twincam/ui/components/scroll-area'
-import { cn } from '@twincam/ui/lib/utils'
 import { ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
+import { cn } from '../lib/utils'
+import { Input } from './input'
+import { ScrollArea } from './scroll-area'
 
 export const ComboboxContext: React.Context<{
   chipsRef: React.RefObject<Element | null> | null

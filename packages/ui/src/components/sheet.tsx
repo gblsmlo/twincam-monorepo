@@ -3,11 +3,11 @@
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { Button } from '@twincam/ui/components/button'
-import { ScrollArea } from '@twincam/ui/components/scroll-area'
-import { cn } from '@twincam/ui/lib/utils'
 import { XIcon } from 'lucide-react'
 import type React from 'react'
+import { cn } from '../lib/utils'
+import { Button } from './button'
+import { ScrollArea } from './scroll-area'
 
 export const Sheet: typeof SheetPrimitive.Root = SheetPrimitive.Root
 

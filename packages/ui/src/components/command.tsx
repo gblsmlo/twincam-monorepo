@@ -1,6 +1,9 @@
 'use client'
 
 import { Dialog as CommandDialogPrimitive } from '@base-ui/react/dialog'
+import { SearchIcon } from 'lucide-react'
+import type * as React from 'react'
+import { cn } from '../lib/utils'
 import {
   Autocomplete,
   AutocompleteCollection,
@@ -11,10 +14,7 @@ import {
   AutocompleteItem,
   AutocompleteList,
   AutocompleteSeparator,
-} from '@twincam/ui/components/autocomplete'
-import { cn } from '@twincam/ui/lib/utils'
-import { SearchIcon } from 'lucide-react'
-import type * as React from 'react'
+} from './autocomplete'
 
 export const CommandDialog: typeof CommandDialogPrimitive.Root = CommandDialogPrimitive.Root
 

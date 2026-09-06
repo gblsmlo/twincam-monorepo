@@ -1,5 +1,5 @@
-import { getGlobalStartContext } from '@tanstack/react-start'
-import { type CurrentUserResponse, currentUserResponseSchema } from '@twincam/core/contracts/users'
+import { api, edenStatus } from '@libs/api-client'
+import type { CurrentUserResponse } from '@twincam/core/contracts/users'
 
 export class CurrentUserUnauthenticatedError extends Error {
   constructor() {
@@ -8,39 +8,32 @@ export class CurrentUserUnauthenticatedError extends Error {
   }
 }
 
-const resolveRequest = (request?: Request): Request | undefined => {
-  if (request) {
-    return request
-  }
-
-  try {
-    return (getGlobalStartContext() as { request?: Request } | undefined)?.request
-  } catch {
-    return undefined
+export class CurrentUserLoadError extends Error {
+  constructor(
+    readonly status?: number,
+    cause?: unknown,
+  ) {
+    super('Nao foi possivel carregar o usuario atual', { cause })
+    this.name = 'CurrentUserLoadError'
   }
 }
 
-const currentUserEndpoint = (request?: Request) =>
-  request ? new URL('/api/v1/me', request.url).toString() : '/api/v1/me'
+export const fetchCurrentUser = async (): Promise<CurrentUserResponse> => {
+  try {
+    const { data, error } = await api.me.get()
 
-export const fetchCurrentUser = async (request?: Request): Promise<CurrentUserResponse> => {
-  const resolvedRequest = resolveRequest(request)
-  const headers = resolvedRequest ? new Headers(resolvedRequest.headers) : new Headers()
+    if (error) {
+      if (edenStatus(error) === 401) {
+        throw new CurrentUserUnauthenticatedError()
+      }
+      throw new CurrentUserLoadError(edenStatus(error))
+    }
 
-  headers.set('accept', 'application/json')
-
-  const response = await fetch(currentUserEndpoint(resolvedRequest), {
-    credentials: 'include',
-    headers,
-  })
-
-  if (response.status === 401) {
-    throw new CurrentUserUnauthenticatedError()
+    return data
+  } catch (cause) {
+    if (cause instanceof CurrentUserUnauthenticatedError || cause instanceof CurrentUserLoadError) {
+      throw cause
+    }
+    throw new CurrentUserLoadError(undefined, cause)
   }
-
-  if (!response.ok) {
-    throw new Error('Nao foi possivel carregar o usuario atual')
-  }
-
-  return currentUserResponseSchema.parse(await response.json())
 }

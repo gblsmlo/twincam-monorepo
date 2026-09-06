@@ -1,15 +1,20 @@
-import { clientEnv } from '@twincam/infra-env/client'
 import type { ReactNode } from 'react'
 
 import authBackground from '../assets/bg-auth.jpg'
 
-export function AppAuthLayout({ children }: Readonly<{ children: ReactNode }>) {
+interface AppAuthLayoutProps {
+  /** Product name shown above the form. It arrives by prop so the layout never reads the environment: the route does. */
+  appName: string
+  children: ReactNode
+}
+
+export function AppAuthLayout({ appName, children }: Readonly<AppAuthLayoutProps>) {
   return (
     <div className='grid min-h-svh overflow-hidden bg-background lg:grid-cols-5'>
       <div className='flex flex-col gap-4 p-6 md:p-10 lg:col-span-3'>
         <div className='flex flex-col gap-1 md:items-start'>
           <span className='text-muted-foreground text-xs uppercase tracking-[0.35em]'>
-            {clientEnv.VITE_APP_NAME}
+            {appName}
           </span>
           <span className='font-semibold text-foreground text-sm'>Acesso seguro</span>
         </div>

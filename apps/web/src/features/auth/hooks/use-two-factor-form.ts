@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { toastManager } from '@twincam/ui/components/toast'
 import { useForm } from 'react-hook-form'
+import { authFeedback } from '../feedback'
 import { verifyTotp } from '../http/two-factor'
 import {
   type TwoFactorFormInput,
@@ -31,21 +32,13 @@ export function useTwoFactorForm({ redirectTo }: Readonly<UseTwoFactorFormParams
         code: values.code,
       })
 
-      toastManager.add({
-        description: 'Verificacao em duas etapas concluida.',
-        title: 'Acesso validado',
-        type: 'success',
-      })
+      toastManager.add(authFeedback.twoFactor.success)
 
       await navigate({ to: redirectTo })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Codigo de autenticacao invalido.'
 
-      toastManager.add({
-        description: message,
-        title: 'Falha na verificacao',
-        type: 'error',
-      })
+      toastManager.add(authFeedback.twoFactor.failure(message))
     }
   })
 

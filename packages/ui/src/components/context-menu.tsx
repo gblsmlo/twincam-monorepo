@@ -1,9 +1,9 @@
 'use client'
 
 import { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu'
-import { cn } from '@twincam/ui/lib/utils'
 import { ChevronRightIcon } from 'lucide-react'
 import type * as React from 'react'
+import { cn } from '../lib/utils'
 
 export const ContextMenu: typeof ContextMenuPrimitive.Root = ContextMenuPrimitive.Root
 

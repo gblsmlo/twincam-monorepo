@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import { Button } from '@twincam/ui'
+import { Button } from '@twincam/ui/components/button'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@twincam/ui/components/field'
 import { Form } from '@twincam/ui/components/form'
 import { Input } from '@twincam/ui/components/input'
 import { FormProvider, useFormContext } from 'react-hook-form'
+import { PasswordField } from '../../../../components/password-field'
 
 import type { SignInFormValues } from '../../hooks/use-sign-in-form'
 import { useSignInForm } from '../../hooks/use-sign-in-form'
@@ -19,17 +20,17 @@ export function SignInForm({ initialEmail, redirectTo }: Readonly<SignInFormProp
 
   return (
     <FormProvider {...form}>
-      <SignInFields onSubmit={onSubmit} redirectTo={redirectTo} />
+      <SignInFormFields onSubmit={onSubmit} redirectTo={redirectTo} />
     </FormProvider>
   )
 }
 
-interface SignInFieldsProps {
+interface SignInFormFieldsProps {
   onSubmit: ReturnType<typeof useSignInForm>['onSubmit']
   redirectTo: string
 }
 
-function SignInFields({ onSubmit, redirectTo }: Readonly<SignInFieldsProps>) {
+export function SignInFormFields({ onSubmit, redirectTo }: Readonly<SignInFormFieldsProps>) {
   const {
     formState: { errors, isSubmitting },
     register,
@@ -39,12 +40,11 @@ function SignInFields({ onSubmit, redirectTo }: Readonly<SignInFieldsProps>) {
 
   return (
     <Form className='flex flex-col gap-5' noValidate onSubmit={onSubmit}>
-      <Field name='email'>
+      <Field invalid={Boolean(errors.email)} name='email'>
         <FieldLabel>Email</FieldLabel>
         <Input
           {...register('email')}
           autoComplete='email'
-          aria-invalid={Boolean(errors.email)}
           inputMode='email'
           placeholder='voce@empresa.com'
           type='email'
@@ -53,14 +53,12 @@ function SignInFields({ onSubmit, redirectTo }: Readonly<SignInFieldsProps>) {
         <FieldError>{errors.email?.message}</FieldError>
       </Field>
 
-      <Field name='password'>
+      <Field invalid={Boolean(errors.password)} name='password'>
         <FieldLabel>Senha</FieldLabel>
-        <Input
+        <PasswordField
           {...register('password')}
           autoComplete='current-password'
-          aria-invalid={Boolean(errors.password)}
           placeholder='Sua senha'
-          type='password'
         />
         <FieldError>{errors.password?.message}</FieldError>
       </Field>
