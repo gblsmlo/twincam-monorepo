@@ -1,7 +1,10 @@
 import { Button } from '@twincam/ui/components/button'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@twincam/ui/components/field'
 import { Form } from '@twincam/ui/components/form'
-import { Input } from '@twincam/ui/components/input'
+import { FormProvider, useFormContext } from 'react-hook-form'
+
+import { PasswordField } from '../../../../components/password-field'
+import type { ResetPasswordFormInput } from '../../hooks/use-reset-password-form'
 import { useResetPasswordForm } from '../../hooks/use-reset-password-form'
 
 interface ResetPasswordFormProps {
@@ -10,34 +13,44 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ token }: Readonly<ResetPasswordFormProps>) {
   const { form, onSubmit } = useResetPasswordForm({ token })
+
+  return (
+    <FormProvider {...form}>
+      <ResetPasswordFormFields onSubmit={onSubmit} />
+    </FormProvider>
+  )
+}
+
+interface ResetPasswordFormFieldsProps {
+  onSubmit: ReturnType<typeof useResetPasswordForm>['onSubmit']
+}
+
+export function ResetPasswordFormFields({ onSubmit }: Readonly<ResetPasswordFormFieldsProps>) {
   const {
     formState: { errors, isSubmitting },
     register,
-  } = form
+  } = useFormContext<ResetPasswordFormInput>()
 
   return (
     <Form className='flex flex-col gap-5' noValidate onSubmit={onSubmit}>
-      <Field name='newPassword'>
+      <Field invalid={Boolean(errors.newPassword)} name='newPassword'>
         <FieldLabel>Nova senha</FieldLabel>
-        <Input
+        <PasswordField
           {...register('newPassword')}
-          aria-invalid={Boolean(errors.newPassword)}
           autoComplete='new-password'
           placeholder='Mínimo de 12 caracteres'
-          type='password'
         />
         <FieldDescription>Use uma senha nova e diferente da anterior.</FieldDescription>
         <FieldError>{errors.newPassword?.message}</FieldError>
       </Field>
 
-      <Field name='confirmPassword'>
+      <Field invalid={Boolean(errors.confirmPassword)} name='confirmPassword'>
         <FieldLabel>Confirmar senha</FieldLabel>
-        <Input
+        <PasswordField
           {...register('confirmPassword')}
-          aria-invalid={Boolean(errors.confirmPassword)}
           autoComplete='new-password'
           placeholder='Repita a nova senha'
-          type='password'
+          toggleLabel='confirmação'
         />
         <FieldError>{errors.confirmPassword?.message}</FieldError>
       </Field>

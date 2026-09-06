@@ -1,4 +1,5 @@
 import { Outlet, createFileRoute } from '@tanstack/react-router'
+import { clientEnv } from '@twincam/infra-env/client'
 import { AppAuthLayout } from '../../layouts/app-auth-layout'
 
 export const Route = createFileRoute('/(auth)')({
@@ -7,7 +8,7 @@ export const Route = createFileRoute('/(auth)')({
 
 function AuthRoute() {
   return (
-    <AppAuthLayout>
+    <AppAuthLayout appName={clientEnv.VITE_APP_NAME}>
       <Outlet />
     </AppAuthLayout>
   )

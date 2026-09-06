@@ -108,7 +108,7 @@ export function StateGuard({ children, state, surface }: StateGuardProps): React
         )}
         role='status'
       >
-        <Spinner aria-hidden='true' className='size-5 text-muted-foreground' role='none' />
+        <Spinner className='size-5 text-muted-foreground' />
         <p className='font-medium text-sm'>{surface.title}</p>
         <p className='max-w-md text-muted-foreground text-sm'>{surface.description}</p>
       </div>
