@@ -4,6 +4,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '@twincam/ui/com
 import { Form } from '@twincam/ui/components/form'
 import { Input } from '@twincam/ui/components/input'
 import { FormProvider, useFormContext } from 'react-hook-form'
+import { PasswordField } from '../../../../components/password-field'
 
 import type { SignInFormValues } from '../../hooks/use-sign-in-form'
 import { useSignInForm } from '../../hooks/use-sign-in-form'
@@ -55,12 +56,11 @@ function SignInFields({ onSubmit, redirectTo }: Readonly<SignInFieldsProps>) {
 
       <Field name='password'>
         <FieldLabel>Senha</FieldLabel>
-        <Input
+        <PasswordField
           {...register('password')}
-          autoComplete='current-password'
           aria-invalid={Boolean(errors.password)}
+          autoComplete='current-password'
           placeholder='Sua senha'
-          type='password'
         />
         <FieldError>{errors.password?.message}</FieldError>
       </Field>

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { toastManager } from '@twincam/ui/components/toast'
 import { useForm } from 'react-hook-form'
+import { authFeedback } from '../feedback'
 import { AuthRequestError } from '../http/errors'
 import { signUp } from '../http/sign-up'
 import {
@@ -34,11 +35,7 @@ export function useSignUpForm({ redirectTo }: Readonly<UseSignUpFormParams>) {
     try {
       const result = await signUp(values)
 
-      toastManager.add({
-        description: result.message,
-        title: 'Conta criada',
-        type: 'success',
-      })
+      toastManager.add(authFeedback.signUp.success(result.message))
 
       form.reset()
       await navigate({
@@ -59,11 +56,7 @@ export function useSignUpForm({ redirectTo }: Readonly<UseSignUpFormParams>) {
       }
 
       if (error instanceof AuthRequestError && error.code === 'invalid_success_response') {
-        toastManager.add({
-          description: message,
-          title: 'Conta criada',
-          type: 'success',
-        })
+        toastManager.add(authFeedback.signUp.success(message))
 
         form.reset()
         await navigate({
@@ -76,11 +69,7 @@ export function useSignUpForm({ redirectTo }: Readonly<UseSignUpFormParams>) {
         return
       }
 
-      toastManager.add({
-        description: message,
-        title: 'Falha ao criar conta',
-        type: 'error',
-      })
+      toastManager.add(authFeedback.signUp.failure(message))
     }
   })
 

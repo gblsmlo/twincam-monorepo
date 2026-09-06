@@ -1,4 +1,4 @@
-import { authClient } from '@twincam/auth/client'
+import { signOut as signOutSession } from '@features/auth'
 import {
   SidebarFooter,
   SidebarMenu,
@@ -20,7 +20,7 @@ function initials(name?: string): string {
 
 export function NavUser({ organizationName, userName }: Readonly<NavUserProps>) {
   const signOut = async () => {
-    await authClient.signOut()
+    await signOutSession()
     window.location.assign('/login')
   }
 

@@ -12,7 +12,15 @@ mock.module('@tanstack/react-start', () => ({
   }),
 }))
 
-const { CurrentUserUnauthenticatedError, fetchCurrentUser } = await import('./current-user')
+const { CurrentUserLoadError, CurrentUserUnauthenticatedError, fetchCurrentUser } = await import(
+  './current-user'
+)
+
+const session = {
+  organization: { id: 'org_1', name: 'Acme', slug: 'acme' },
+  role: 'owner',
+  user: { email: 'ana@example.com', id: 'user_1', image: null, name: 'Ana' },
+}
 
 describe('fetchCurrentUser', () => {
   const originalFetch = globalThis.fetch
@@ -25,75 +33,44 @@ describe('fetchCurrentUser', () => {
     handler: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
   ): typeof fetch => Object.assign(handler, { preconnect: () => undefined }) as typeof fetch
 
-  test('forwards the current request cookies during the startup bootstrap', async () => {
+  test('forwards the current request cookies during the server-side bootstrap', async () => {
     let capturedInit: RequestInit | undefined
 
-    globalThis.fetch = createFetchStub(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = createFetchStub(async (_input, init) => {
       capturedInit = init
-
-      return new Response(
-        JSON.stringify({
-          organization: {
-            id: 'org_1',
-            name: 'Acme',
-            slug: 'acme',
-          },
-          role: 'owner',
-          user: {
-            email: 'ana@example.com',
-            id: 'user_1',
-            image: null,
-            name: 'Ana',
-          },
-        }),
-        {
-          headers: {
-            'content-type': 'application/json',
-          },
-          status: 200,
-        },
-      )
+      return Response.json(session)
     })
 
-    const session = await fetchCurrentUser()
+    const current = await fetchCurrentUser()
 
-    expect(session.user.email).toBe('ana@example.com')
-    expect(session.role).toBe('owner')
-    expect(session.organization?.slug).toBe('acme')
+    expect(current.user.email).toBe('ana@example.com')
+    expect(current.role).toBe('owner')
+    expect(current.organization?.slug).toBe('acme')
     expect(capturedInit?.credentials).toBe('include')
-    expect(capturedInit?.headers instanceof Headers).toBe(true)
-    expect((capturedInit?.headers as Headers).get('cookie')).toBe('session=abc123')
-    expect((capturedInit?.headers as Headers).get('accept')).toBe('application/json')
+    expect(new Headers(capturedInit?.headers).get('cookie')).toBe('session=abc123')
+    expect(new Headers(capturedInit?.headers).get('accept')).toBe('application/json')
   })
 
-  test('uses the current request origin for the server-side session bootstrap', async () => {
+  test('reaches the API through its own base on the server, not the browser request origin', async () => {
     let capturedInput: RequestInfo | URL | undefined
 
-    globalThis.fetch = createFetchStub(async (input: RequestInfo | URL) => {
+    globalThis.fetch = createFetchStub(async (input) => {
       capturedInput = input
-
-      return new Response(
-        JSON.stringify({
-          organization: null,
-          role: null,
-          user: {
-            email: 'ana@example.com',
-            id: 'user_1',
-            image: null,
-            name: 'Ana',
-          },
-        }),
-        { status: 200 },
-      )
+      return Response.json({ ...session, organization: null, role: null })
     })
 
     await fetchCurrentUser()
 
-    expect(capturedInput).toBe('http://localhost/api/me')
+    expect(String(capturedInput)).toBe('http://127.0.0.1:3001/api/me')
   })
 
   test('identifies an absent session from a 401 response', async () => {
-    globalThis.fetch = createFetchStub(async () => new Response(null, { status: 401 }))
+    globalThis.fetch = createFetchStub(async () =>
+      Response.json(
+        { error: { code: 'unauthenticated', message: 'Authentication required.' } },
+        { status: 401 },
+      ),
+    )
 
     await expect(fetchCurrentUser()).rejects.toBeInstanceOf(CurrentUserUnauthenticatedError)
   })
@@ -101,7 +78,7 @@ describe('fetchCurrentUser', () => {
   test('preserves operational failures instead of treating them as an absent session', async () => {
     globalThis.fetch = createFetchStub(async () => new Response(null, { status: 503 }))
 
-    await expect(fetchCurrentUser()).rejects.toThrow('Nao foi possivel carregar o usuario atual')
+    await expect(fetchCurrentUser()).rejects.toBeInstanceOf(CurrentUserLoadError)
     await expect(fetchCurrentUser()).rejects.not.toBeInstanceOf(CurrentUserUnauthenticatedError)
   })
 })

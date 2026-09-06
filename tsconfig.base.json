@@ -9,6 +9,7 @@
     "ignoreDeprecations": "6.0",
     "paths": {
       "@features/*": ["./apps/web/src/features/*"],
+      "@libs/*": ["./apps/web/src/libs/*"],
       "@web/*": ["./apps/web/src/*"]
     },
     "skipLibCheck": true,
