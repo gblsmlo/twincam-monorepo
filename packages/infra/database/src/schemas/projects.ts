@@ -1,6 +1,5 @@
 import { projectNameRule } from '@twincam/core/projects/field-rules'
 import { createInsertSchema } from 'drizzle-zod'
-import type { z } from 'zod'
 
 import { projects } from '../schema'
 
@@ -18,5 +17,3 @@ import { projects } from '../schema'
 export const projectInsertSchema = createInsertSchema(projects, {
   name: (schema) => schema.trim().min(projectNameRule.min),
 })
-
-export type ProjectInsert = z.infer<typeof projectInsertSchema>
