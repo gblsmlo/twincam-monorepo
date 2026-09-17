@@ -111,6 +111,22 @@ with `concurrency` per ref. Five jobs:
 | `catalog` | on `main` only, after `build` and `storybook`: `storybook:build` and the static catalog as a retained artifact |
 | `e2e` | migrate, seed, `test:e2e`, report uploaded on failure |
 
+Every job starts with `./.github/actions/setup-workspace`: the pinned Node and
+Bun, the Bun store restored from cache, and the frozen install. Keeping it in
+one composite is what stops a new job from being the one that installs cold —
+and what keeps the cache key identical everywhere.
+
+Two caches, with deliberately different keys:
+
+| Cache | Key | `restore-keys` |
+| --- | --- | --- |
+| `~/.bun/install/cache` | `bun.lock` | yes — the store is content-addressed and `--frozen-lockfile` still resolves the lockfile exactly, so an older cache only warms the download |
+| `~/.cache/ms-playwright` | the **resolved** Playwright version | no — browsers of another version would restore and the install step would consider itself satisfied |
+
+That asymmetry is the whole rule: a partial hit is safe when the cache cannot
+change the result, and a false green when it can. The Playwright version is
+read from the installed package, never from the range in the manifest.
+
 CI repeats `lint:ci` and `typecheck` because local hooks can be skipped. The
 reasons that are not obvious in the YAML live in
 `.github/workflows/README.md`.

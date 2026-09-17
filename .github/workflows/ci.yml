@@ -39,22 +39,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
+      - name: Setup Workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Check Toolchain
         run: sh scripts/check-toolchain.sh
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
 
       - name: Lint
         run: bun run lint:ci
@@ -82,19 +71,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup Workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Build API, Web and the component catalog
         run: bun run build
@@ -110,19 +88,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
+      - name: Setup Workspace
+        uses: ./.github/actions/setup-workspace
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
+      - name: Resolve Playwright Version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # No `restore-keys`: browsers of another version would restore and the
+          # install step would consider itself satisfied.
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
       - name: Install Playwright Chromium
         working-directory: apps/storybook
@@ -147,19 +126,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup Workspace
+        uses: ./.github/actions/setup-workspace
 
       # `GITHUB_SHA` is what `main.ts` stamps into the catalog, so the artifact
       # says which commit it is without anyone having to remember.
@@ -198,19 +166,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
+      - name: Setup Workspace
+        uses: ./.github/actions/setup-workspace
 
       - name: Write Environment File
         run: sh scripts/ci-env.sh
@@ -220,6 +177,18 @@ jobs:
 
       - name: Seed Database
         run: bun run db:seed
+
+      - name: Resolve Playwright Version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # No `restore-keys`: browsers of another version would restore and the
+          # install step would consider itself satisfied.
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
       - name: Install Playwright Chromium
         run: bun run test:e2e:install
