@@ -101,13 +101,14 @@ and gitignored.
 ## CI
 
 `.github/workflows/ci.yml` runs on pull requests to `main` and pushes to `main`,
-with `concurrency` per ref. Four jobs:
+with `concurrency` per ref. Five jobs:
 
 | Job | Runs |
 | --- | --- |
 | `quality` | toolchain check, frozen install, `lint:ci`, `typecheck`, `scripts/ci-env.sh`, `db:migrate`, `test` against PostgreSQL 17 |
 | `build` | `bun run build` |
 | `storybook` | Chromium installed from `apps/storybook`, `storybook:test` |
+| `catalog` | on `main` only, after `build` and `storybook`: `storybook:build` and the static catalog as a retained artifact |
 | `e2e` | migrate, seed, `test:e2e`, report uploaded on failure |
 
 CI repeats `lint:ci` and `typecheck` because local hooks can be skipped. The

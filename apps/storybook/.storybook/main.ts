@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -23,6 +24,33 @@ export const storybookAliases = [
   { find: '@web', replacement: fileURLToPath(new URL('../../web/src', import.meta.url)) },
 ]
 
+/**
+ * The commit this catalog was built from.
+ *
+ * A published catalog with no version ages in silence: someone reads a
+ * component three releases old and has no way to tell. `GITHUB_SHA` covers the
+ * pipeline, `git` covers a local build, and a build with neither says `dev`
+ * instead of claiming a commit it does not have.
+ */
+const buildCommit = (): string => {
+  const fromPipeline = process.env.GITHUB_SHA
+
+  if (fromPipeline) {
+    return fromPipeline.slice(0, 7)
+  }
+
+  try {
+    return execSync('git rev-parse --short HEAD', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+  } catch {
+    return 'dev'
+  }
+}
+
+const commit = buildCommit()
+
 const config: StorybookConfig = {
   addons: [
     getAbsolutePath('@storybook/addon-docs'),
@@ -42,6 +70,27 @@ const config: StorybookConfig = {
     { directory: '../src/stories/layouts', files: storyFiles, titlePrefix: 'Layout' },
     { directory: '../src/stories/pages', files: storyFiles, titlePrefix: 'Pages' },
   ],
+  // The badge is appended to `body`, not to a Storybook element: the manager's
+  // DOM is not a public interface, and a version stamp must not break when it
+  // changes. The `meta` is the machine-readable half — a deploy check can read
+  // which commit is live without scraping the page.
+  managerHead: (head) => `${head}
+    <meta name="twincam:commit" content="${commit}" />
+    <style>
+      #twincam-build {
+        position: fixed; left: 10px; bottom: 8px; z-index: 10;
+        font: 11px/1.4 ui-monospace, SFMono-Regular, monospace;
+        color: #8b8b8b; pointer-events: none;
+      }
+    </style>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const badge = document.createElement('div')
+        badge.id = 'twincam-build'
+        badge.textContent = ${JSON.stringify(commit)}
+        document.body.appendChild(badge)
+      })
+    </script>`,
   viteFinal: async (viteConfig) =>
     mergeConfig(viteConfig, {
       plugins: [tailwindcss()],

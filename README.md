@@ -87,7 +87,7 @@ each boundary, and [docs/decisions](docs/decisions/README.md) explains why.
 .
 ├── apps
 │   ├── api                 # Elysia API: features/{auth,health,projects,users}, libs
-│   ├── storybook           # Component test layer for ui, patterns, layouts, features, pages
+│   ├── storybook           # Component test layer; its build is the published catalog
 │   └── web                 # TanStack Start application
 ├── packages
 │   ├── auth                # Better Auth server and client, organization policy
@@ -171,6 +171,7 @@ through `VITE_*`.
 | `bun run test:unit` | Run only the layer that needs no services |
 | `bun run test:integration` | Run the PostgreSQL layer (`*.integration.test.ts`) |
 | `bun run storybook:test` | Run every story in headless Chromium |
+| `bun run storybook:build` | Build the static component catalog |
 | `bun run test:e2e` | Run the Playwright journeys |
 | `bun run build` | Build the API and the web application |
 

@@ -41,6 +41,7 @@ When documents conflict:
 | Shell and navigation | `apps/web/src/layouts` | Route groups |
 | Web to API client | `apps/web/src/libs/api-client.ts` | Feature `http/` adapters |
 | Component tests in a browser | `apps/storybook` | Stories of `ui`, `patterns`, `layouts`, `features` and pages |
+| The published component catalog | `apps/storybook` build, stamped with the commit | Whoever reads the components without the code open |
 | Journeys | `e2e/` | Runs against Web and API over HTTP |
 
 ## Structure of `apps/api`
