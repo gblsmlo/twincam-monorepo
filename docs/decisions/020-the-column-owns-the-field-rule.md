@@ -90,7 +90,9 @@ stands unchanged: **core never imports infra-database**.
 - A field rule has one owner, and it is the one the database enforces.
 - What the contract refuses, the database refuses too — for whoever skips the
   contract.
-- `schemas/<table>.ts` stops being a pattern nobody applies.
+- `schemas/<table>.ts` stops being a pattern nobody applies. The `users` one was
+  deleted rather than given a consumer: Better Auth's internal adapter owns that
+  table, and this repository never inserts into it.
 - The public contract, the web bundle and Decision 002 are untouched.
 - A new tenant-owned table has one more file to write, and it is four constants.
 

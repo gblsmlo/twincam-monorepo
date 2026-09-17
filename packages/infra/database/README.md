@@ -10,7 +10,7 @@ application and never imports `@twincam/auth`.
 | `./schema` | tables, indexes and policies |
 | `./client` | the pool and `WorkspaceTx` |
 | `./workspace` | `withWorkspaceTransaction`, `withActorWorkspaceTransaction` |
-| `./schemas/users` | internal row schemas derived with `drizzle-zod` |
+| `./schemas/projects` | internal write schema derived with `drizzle-zod` |
 
 No raw SQL executor is exported. That absence is what keeps the Drizzle builder
 the default rather than a preference (Decision 004).

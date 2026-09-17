@@ -50,7 +50,11 @@ export const createUserRoutes = ({
 
       const actorContext = await resolveActor(request)
 
-      return currentUserResponseSchema.parse({
+      // Not parsed here: the route declares `200: currentUserResponseSchema`,
+      // and Elysia validates the response against it. Parsing by hand is a
+      // second validation of the same contract, and the one nobody remembers
+      // to change when the schema does.
+      return {
         organization: actorContext.ok
           ? {
               id: actorContext.context.organizationId,
@@ -65,7 +69,7 @@ export const createUserRoutes = ({
           image: user.image ?? null,
           name: user.name?.trim() || user.email,
         },
-      })
+      }
     },
     {
       response: {

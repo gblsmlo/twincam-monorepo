@@ -76,7 +76,9 @@ Este tipo atravessa a fronteira HTTP?
 │
 └── NÃO, é a forma do que está gravado → SCHEMA INTERNO
           derivado do Drizzle com drizzle-zod, mora em Infra
-          (packages/infra/database/src/schemas/users.ts é o modelo)
+          (packages/infra/database/src/schemas/projects.ts é o modelo, e o adapter
+          da fatia parseia a escrita com ele — schema derivado sem consumidor é
+          export, não padrão)
           nunca é contrato público, nunca vaza para o Web
 ```
 

@@ -10,6 +10,7 @@
     "db:studio": "bun --env-file=../../../.env drizzle-kit studio --config drizzle.config.ts --host 0.0.0.0",
     "dev": "docker compose up -d postgres",
     "dev:db:down": "docker compose stop postgres",
+    "test": "bun test --env-file ../../../.env",
     "typecheck": "tsc -p tsconfig.json"
   },
   "exports": {
@@ -17,7 +18,6 @@
     "./client": "./src/client.ts",
     "./schema": "./src/schema.ts",
     "./schemas/projects": "./src/schemas/projects.ts",
-    "./schemas/users": "./src/schemas/users.ts",
     "./workspace": "./src/workspace.ts"
   },
   "dependencies": {

@@ -257,7 +257,7 @@ de lock e idempotência. Migration nova se valida em banco limpo antes do merge.
 
 O guardrail é a revisão contra o `README.md` do módulo de persistência e o mapa
 `exports` de `@twincam/infra-database`, que publica `./client`, `./schema`,
-`./schemas/users` e `./workspace` — nunca um executor de SQL cru (baseline §
+`./schemas/projects` e `./workspace` — nunca um executor de SQL cru (baseline §
 Decision matrix).
 
 Ao **adicionar** uma exceção: owner, categoria (`concurrency`, `rls-context`,
