@@ -53,6 +53,7 @@ exists only to forward a method is the thing this omission demonstrates.
 | --- | --- |
 | Add a field to a project | `field-rules.ts` if it has a limit, then `schemas.ts`, the table, `projectSelect` |
 | Add a filter to the listing | `projectListQuerySchema`, then `listProjects` |
+| Show how many projects there are | it is not free here: the envelope has no `total` on purpose (Decision 021) |
 | Add a state transition | a use case, then a `POST /:projectId/<verb>` route |
 | Change who may archive | `canArchiveProject`, read by the use case and by the route file |
 | Make two writes atomic | one entry in `repository.ts` running both inside a single `inWorkspace` |

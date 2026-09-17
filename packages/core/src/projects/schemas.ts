@@ -46,6 +46,12 @@ export const projectListQuerySchema = z.object({
   status: projectStatusSchema.optional(),
 })
 
+/**
+ * `nextCursor` is how the client learns there is more, and there is no `total`:
+ * a count over the same filter costs an aggregate on every page and has to run
+ * in the page's transaction to agree with it. The divergence from the vault's
+ * `ELYSIA-TYPE-13`, which assumes offset pagination, is Decision 021.
+ */
 export const projectListResponseSchema = z
   .object({
     items: z.array(projectSchema),

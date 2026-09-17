@@ -43,6 +43,7 @@ the successor exists; the successor adds its own row here.
 | 018 | [the starter ships one reference slice, and it is removable](018-the-starter-ships-one-reference-slice.md) | active |
 | 019 | [the composition root owns the transaction boundary](019-the-composition-root-owns-the-transaction-boundary.md) | active |
 | 020 | [the column owns the field rule, the contract owns the shape](020-the-column-owns-the-field-rule.md) | active |
+| 021 | [the listing envelope carries a cursor, not a total](021-the-listing-envelope-carries-a-cursor-not-a-total.md) | active |
 
 ## Historical
 

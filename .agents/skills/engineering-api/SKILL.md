@@ -185,7 +185,10 @@ new Elysia({ prefix: '/api/<capability>' })
 - **Path param malformado é 400 `invalid_request`**, não 404 — entrada inválida
   não é recurso ausente.
 - **Listagem usa cursor**, com limite máximo e ordenação determinística; filtro
-  e cursor têm schema Zod no Core.
+  e cursor têm schema Zod no Core. O envelope é `{ items, nextCursor }` — sem
+  `total`, divergindo de propósito do `ELYSIA-TYPE-13` do vault, que pressupõe
+  paginação por offset (Decisão 021). Revisão que citar aquele ID recebe a
+  decisão como resposta, uma vez.
 - **Transição de estado é comando explícito** (`POST .../<verbo>`), não `PATCH`
   genérico.
 - **Idempotência, concorrência e rollout** seguem
@@ -260,7 +263,7 @@ const { data, error } = edenCreated<unknown>(await api.auth['sign-up'].post(payl
 | 12 | A composição não depende da ordem dos `.use()` em `app.ts` | 005 |
 | 13 | Teste provando que o derive do módulo não alcança rota de outro módulo | 005 |
 | 14 | `organizationId` do `actorContext`, nunca de input do cliente | guia da API |
-| 15 | Listagem com cursor, limite máximo e ordenação determinística | convenções |
+| 15 | Listagem com cursor, limite máximo e ordenação determinística; envelope `{ items, nextCursor }` | convenções · 021 |
 | 16 | Client em `http/`, por `api.<recurso>`, `edenStatus` e `edenCreated` onde cabe | 013 |
 | 17 | Nenhum `schema.parse` no consumidor de rota `200` | 013 |
 | 18 | Import de fatia pelo barrel; dependência declarada no manifesto | 001 |
