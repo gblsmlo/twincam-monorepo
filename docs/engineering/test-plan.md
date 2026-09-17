@@ -93,8 +93,9 @@ a mirror tree of `src/`.
 ### Scope
 
 - Tenant-aware persistence: positive cases, two organizations, `WITH CHECK`,
-  no context and rollback (RLS). Tenant-owned business tables do not exist yet;
-  the first one must ship with this coverage before its data is exposed.
+  no context and rollback (RLS). `projects` is the worked example
+  (`apps/api/src/features/projects/projects.integration.test.ts`); every new
+  tenant-owned table ships this coverage before its data is exposed.
 - HTTP contracts against the real adapter (Drizzle) plus error mapping.
 - Session and actor with the real auth handler, outside the DOM.
 - Web components with Testing Library (behavior, not implementation).

@@ -112,7 +112,10 @@ importar** (Decisão 002, regra 2). Se a rota valida, o schema mora no Core.
 em `packages/core/src/<outra>/` consome o schema, é kernel; se só `apps/`
 consome, é da capacidade. `publicUserSchema` em `contracts/users.ts` é kernel
 porque Auth e qualquer capacidade que mostre uma pessoa o consomem. Hoje o
-kernel tem `auth.ts`, `users.ts` e `health.ts`; ele **não** é o destino
+kernel tem `auth.ts`, `users.ts`, `health.ts` e `http.ts` (o envelope de erro
+que a API declara e o Web lê); `packages/core/src/projects/` é o exemplo do
+outro lado — contrato de uma capacidade só, publicado por `./projects`. O
+kernel **não** é o destino
 padrão da segunda capacidade.
 
 **Exportar é decisão, não default.** O array que alimenta `z.enum()` é `const`

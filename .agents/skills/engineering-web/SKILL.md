@@ -50,6 +50,7 @@ contrato, o adapter e o client `http/` já existem.
 | 1 | [`references/docs.md`](references/docs.md) | a lista de arquivos de referência da feature modelo |
 | 2 | Decisão 007 | a árvore modelo e as regras de `index.ts`, `pages/`, `components/`, `http/` |
 | 3 | `apps/web/src/features/auth/` | o modelo vivo: `index.ts`, `pages/`, `components/forms/`, `hooks/`, `http/`, `schemas/`, `feedback.ts`, `storybook/` |
+| 3b | `apps/web/src/features/projects/` | o mesmo formato numa capacidade autenticada: `route-search.ts`, `query-options.ts` e uma rota com loader |
 | 4 | `apps/web/src/routes/(auth)/sign-up.tsx` e `(authenticated)/route.tsx` | a rota fina e a guarda de sessão |
 | 5 | `AGENTS.md` § apps/web | as regras que nenhum gate pega |
 | 6 | [`test-plan.md`](../../../docs/engineering/test-plan.md) § 5.1 | qual camada testa o quê |

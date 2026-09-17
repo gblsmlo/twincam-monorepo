@@ -39,6 +39,8 @@ the successor exists; the successor adds its own row here.
 | 014 | [the id is an opaque string](014-id-is-an-opaque-string.md) | active |
 | 015 | [documentation is addressed by index; superseded decisions move to `archive/`](015-docs-addressed-by-index.md) | active |
 | 016 | [a parent issue exists only when there are two or more independent deliveries](016-decomposition-gate.md) | active |
+| 017 | [tenant isolation runs under a restricted role, not under the connection's](017-tenant-isolation-runs-under-a-restricted-role.md) | active |
+| 018 | [the starter ships one reference slice, and it is removable](018-the-starter-ships-one-reference-slice.md) | active |
 
 ## Historical
 

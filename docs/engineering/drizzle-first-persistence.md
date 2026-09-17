@@ -6,11 +6,14 @@ Decision 001 and Decision 002; see
 [`../decisions/README.md`](../decisions/README.md). This document defines no
 product behavior.
 
-The starter ships identity tables only (`users`, `organizations`, `members`,
-`invitations`, `notification_outbox` and friends). Examples that touch a
-tenant-owned business table use an illustrative `records` table with
-`organization_id`; the first real one follows the same shape. The transaction
-helper is `withWorkspaceTransaction` from `@twincam/infra-database/workspace`.
+Besides the identity tables (`users`, `organizations`, `members`,
+`invitations`, `notification_outbox` and friends), the starter ships one
+tenant-owned table, `projects`, as the reference slice (Decision 018). Examples
+below use an illustrative `records` table with `organization_id`; `projects` is
+the executable one, and a new table follows the same shape. The transaction
+helper is `withWorkspaceTransaction` from `@twincam/infra-database/workspace`,
+which applies the workspace context and enters the restricted role every
+tenant-aware statement runs as (Decision 017).
 Official references: [select](https://orm.drizzle.team/docs/select),
 [insert and upsert](https://orm.drizzle.team/docs/insert),
 [update and CTE](https://orm.drizzle.team/docs/update).
@@ -160,7 +163,9 @@ return withWorkspaceTransaction(input.organizationId, async (tx) => {
 ```
 
 The helper runs `set_config('app.workspace_id', <id>, true)` inside the
-transaction and verifies it was applied. RLS is the mandatory boundary; the
+transaction, verifies it was applied, and enters the `twincam_workspace` role,
+without which the policy would not apply to the connection at all (Decision
+017). RLS is the mandatory boundary; the
 explicit `organizationId` filter is additional defense and states the invariant
 in code. Tenant-aware changes need negative coverage with two organizations,
 `WITH CHECK`, access without context and rollback. Runtime roles receive only
@@ -304,5 +309,7 @@ Adding a full SQL statement at runtime means adding an entry to the persistence
 module's README with owner, category (`concurrency`, `rls-context`,
 `set-based`, `jsonb-lateral`), justification and the test that covers it.
 Migrating an exception back to the builder removes the entry in the same PR.
-The `set_config` and `current_setting` calls in
-`packages/infra/database/src/workspace.ts` are the starter's only exceptions.
+The starter's only exceptions are the three statements in
+`packages/infra/database/src/workspace.ts` — `set_config`, `current_setting` and
+`SET LOCAL ROLE` — listed with owner, category and test in
+[`packages/infra/database/README.md`](../../packages/infra/database/README.md).

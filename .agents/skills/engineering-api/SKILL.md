@@ -45,7 +45,7 @@ construção: contrato, port e adapter já existem.
 | Ordem | Carregar | Por quê |
 | --- | --- | --- |
 | 1 | O contrato em `packages/core/src/contracts/<x>.ts` ou `packages/core/src/<capability>/schemas.ts` | os schemas de body, query e response já existem |
-| 2 | Uma rota irmã da mesma forma — `apps/api/src/features/users/users.routes.ts` para leitura com `200`, `apps/api/src/features/auth/auth.routes.ts` para escrita com `201` | a composição do módulo é padronizada |
+| 2 | Uma rota irmã da mesma forma — `apps/api/src/features/projects/projects.routes.ts` para um módulo com guard, derive `local`, leitura, escrita `201` e comando de transição; `apps/api/src/features/users/users.routes.ts` para leitura solta com `200` | a composição do módulo é padronizada |
 | 3 | `apps/api/src/libs/http-errors.ts` e `apps/api/src/libs/domain-error-status.ts` | `errorStatuses`, `internalErrorStatus`, `mapValidationError`, `toHttpErrorResponse` |
 | 4 | `apps/api/src/features/auth/actor-context.ts` e Decisão 005 | `createAuthGuard`, `requireActorContext`, `ActorRejectionError`; `scoped` × `local` |
 | 5 | `apps/api/src/app.ts` e `app.test.ts` | a montagem é exercitável por `app.handle()` |

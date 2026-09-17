@@ -21,16 +21,22 @@ documents.
 - Replaceable notification outbox
 - Shared UI primitives, neutral patterns, and Storybook as the component test layer
 - Playwright journeys for the auth flows
+- One reference vertical slice, `projects`, with tenant isolation enforced by
+  PostgreSQL and proven by its own suite
 - PostgreSQL migrations and development seed
 - Docker images, Docker Compose and a four-job GitHub Actions pipeline
 - Repository skills and Claude Code hooks for agent-driven work
 
 ## What is intentionally not included
 
-Billing, analytics, file storage, queues, product-specific roles, business
-entities and email delivery providers are deliberately left out. The
-notification outbox records authentication and invitation messages; a product
-connects it to its delivery provider.
+Billing, analytics, file storage, queues, product-specific roles and email
+delivery providers are deliberately left out. The notification outbox records
+authentication and invitation messages; a product connects it to its delivery
+provider.
+
+The one exception is `projects`, the reference slice: a business-shaped
+capability that exists to demonstrate the architecture and is meant to be
+renamed or deleted (Decision 018).
 
 ## Technology
 
@@ -80,7 +86,7 @@ each boundary, and [docs/decisions](docs/decisions/README.md) explains why.
 ```text
 .
 ├── apps
-│   ├── api                 # Elysia API: features/{auth,health,users}, libs
+│   ├── api                 # Elysia API: features/{auth,health,projects,users}, libs
 │   ├── storybook           # Component test layer for ui, patterns, layouts, features, pages
 │   └── web                 # TanStack Start application
 ├── packages
@@ -162,6 +168,8 @@ through `VITE_*`.
 | `bun run lint:ci` | Check formatting and lint rules |
 | `bun run typecheck` | Typecheck every workspace and the E2E sources |
 | `bun run test` | Run every workspace test suite |
+| `bun run test:unit` | Run only the layer that needs no services |
+| `bun run test:integration` | Run the PostgreSQL layer (`*.integration.test.ts`) |
 | `bun run storybook:test` | Run every story in headless Chromium |
 | `bun run test:e2e` | Run the Playwright journeys |
 | `bun run build` | Build the API and the web application |
@@ -176,8 +184,23 @@ workspace transaction with negative isolation tests, a thin slice in
 `apps/storybook`, and a journey in `e2e/` when routes, session and persistence
 meet. The repository skills under `.agents/skills` walk each phase.
 
-Tenant-owned tables carry an `organization_id`. Add and test PostgreSQL
-row-level security with the first business table.
+Tenant-owned tables carry an `organization_id`, are reached only through the
+workspace transaction, and ship their row-level security policy, their grant to
+the workspace role and the four negative isolation cases in the same pull
+request (Decision 017).
+
+### The reference slice
+
+`projects` is one capability implemented across every layer, and it is there to
+be copied and then renamed or deleted (Decision 018): contract and use cases in
+`packages/core/src/projects`, the tenant-owned table with its policy, the slice
+in `apps/api/src/features/projects`, the feature in
+`apps/web/src/features/projects`, stories in `apps/storybook` and a journey in
+`e2e/projects`. It decides nothing a product must accept — a name unique per
+organization, an optional description, two states and one transition.
+
+[`apps/api/src/features/projects/README.md`](apps/api/src/features/projects/README.md)
+explains what it proves, where each responsibility lives, and how to remove it.
 
 ## Validation
 
@@ -206,6 +229,7 @@ Changes to Dockerfiles or workspace dependencies should also pass
 - Add edge rate limiting and abuse protection.
 - Configure PostgreSQL backups and rehearse migration rollback.
 - Add tenant-isolation tests for every business-owned table.
+- Remove or rename the `projects` reference slice.
 - Review observability fields so secrets and personal data are never logged.
 
 ## Documentation

@@ -46,15 +46,16 @@ isolamento. É a segunda das quatro fases de construção: o port já existe.
 | 3 | O `README.md` local da fatia em `apps/api/src/features/<feature>/`, quando existe | qual módulo já é dono, e a lista de exceções |
 | 4 | Decisão 003 | composição por responsabilidade coesa |
 | 5 | `packages/infra/database/src/schema.ts` | constraint, índice e coluna reais; `organization_id` é a coluna tenant |
-| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`, `withActorWorkspaceTransaction` |
+| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`, `withActorWorkspaceTransaction`; a transação entra no papel restrito (Decisão 017) |
 | 7 | Decisão 002 § What each layer validates | row não é contrato |
 
-**O que o starter tem hoje:** só tabelas de identidade do Better Auth
+**O que o starter tem hoje:** as tabelas de identidade do Better Auth
 (`users`, `organizations`, `members`, `invitations`, `sessions`, `accounts`,
-`two_factors`, `verifications`) e `notification_outbox`. Nenhuma tabela de
-negócio tenant-owned, nenhuma policy RLS aplicada. A primeira tabela com
-`organization_id` próprio traz a policy, a transação de workspace e a cobertura
-negativa do Passo 5 no mesmo PR.
+`two_factors`, `verifications`), `notification_outbox` e uma tabela
+tenant-owned, `projects`, com policy RLS aplicada e suíte de isolamento
+(Decisão 018). Toda tabela nova com `organization_id` próprio traz a policy, o
+`GRANT` para o papel de workspace e a cobertura negativa do Passo 5 no mesmo
+PR — `apps/api/src/features/projects/projects.integration.test.ts` é o modelo.
 
 ---
 
@@ -84,8 +85,9 @@ Lock de linha (`.for('update', { skipLocked: true })`) e CTE com `UPDATE FROM`
 são builder — **não justificam SQL completo**. As classes de exceção admitidas
 são quatro: contexto RLS (`set_config`/`current_setting`), concorrência que o
 builder não expressa com clareza, transformação set-based e JSONB/LATERAL. As
-únicas exceções existentes hoje são as chamadas de `set_config` e
-`current_setting` em `packages/infra/database/src/workspace.ts`.
+únicas exceções existentes hoje são as três chamadas em
+`packages/infra/database/src/workspace.ts` — `set_config`, `current_setting` e
+`set local role` — listadas no `README.md` daquele package.
 
 SQL completo novo exige **owner, categoria, justificativa e teste
 proporcional**, registrados no `README.md` do módulo de persistência, no mesmo
@@ -108,7 +110,9 @@ builder completo, não um executor só de SQL.
 - **`organizationId` vem do contexto autenticado** (`actorContext.organizationId`,
   resolvido em `apps/api/src/features/auth/actor.ts`), nunca de input do
   cliente.
-- **RLS é a fronteira obrigatória**; o filtro explícito por `organizationId` no
+- **RLS é a fronteira obrigatória**, e ela só existe porque a transação entra em
+  `twincam_workspace`: a conexão do runtime é dona das tabelas e a policy não se
+  aplicaria a ela (Decisão 017). O filtro explícito por `organizationId` no
   `where` é defesa em profundidade e continua obrigatório — ele expressa o
   invariante no código.
 - **Operações que compartilham invariante ficam na mesma transação.** Separar
@@ -299,9 +303,9 @@ retorna linha é exceção — invariante do código.
 **Passo 5 — a evidência.** Teste de integração com dois usuários em duas
 organizações: o membro de A não resolve contexto em B; a sessão de quem tem
 duas memberships não é fixada; rollback quando o update falha não deixa sessão
-alterada. Como as tabelas são de identidade, sem policy de workspace, os quatro
-casos do Passo 5 chegam com a **primeira tabela tenant-owned** — a fatia que a
-criar traz a policy e a suíte no mesmo PR.
+alterada. Como essas tabelas são de identidade, sem policy de workspace, os quatro casos
+do Passo 5 não se aplicam a elas: eles vivem na fatia tenant-owned, e
+`projects` é o modelo executável.
 
 **Passo 6 — exceções.** Nenhuma introduzida; o README do módulo não ganha
 entrada.
