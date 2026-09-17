@@ -7,6 +7,10 @@ import type { Project, ProjectStatus } from './schemas'
  * (Decision 003). The adapter classifies the expected constraint failures at
  * its own boundary and returns them as `Result`, so no driver message, no
  * constraint name and no row ever reaches a use case.
+ *
+ * No method carries the organization: the repository is built bound to one
+ * workspace, so the tenant cannot be passed correctly to two methods and wrong
+ * to the third (Decision 019).
  */
 export type ProjectsRepository = {
   archiveProject(
@@ -19,7 +23,6 @@ export type ProjectsRepository = {
 }
 
 export type ArchiveProjectInput = {
-  organizationId: string
   projectId: string
 }
 
@@ -27,13 +30,11 @@ export type CreateProjectInput = {
   createdByUserId: string
   description: string | null
   name: string
-  organizationId: string
   projectId: string
 }
 
 export type ProjectListFilter = {
   cursor?: string
-  organizationId: string
   q?: string
   status?: ProjectStatus
 }

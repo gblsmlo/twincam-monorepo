@@ -49,7 +49,12 @@ const repositoryStub = (overrides: Partial<ProjectsRepository> = {}): ProjectsRe
 const createRoutes = (
   resolveActor: ActorResolver = actorAs('owner'),
   repository: ProjectsRepository = repositoryStub(),
-) => createProjectRoutes({ generateId: () => 'generated-id', repository, resolveActor })
+) =>
+  createProjectRoutes({
+    createRepository: () => repository,
+    generateId: () => 'generated-id',
+    resolveActor,
+  })
 
 const get = (path: string, resolveActor?: ActorResolver, repository?: ProjectsRepository) =>
   createRoutes(resolveActor, repository).handle(new Request(`http://localhost${path}`))
@@ -76,18 +81,23 @@ describe('projects listing', () => {
     expect(await response.json()).toEqual({ items: [project()], nextCursor: null })
   })
 
-  test('takes the organization from the actor, never from the query', async () => {
-    const seen: string[] = []
-    const repository = repositoryStub({
-      listProjects: async (filter) => {
-        seen.push(filter.organizationId)
-        return ok({ items: [], nextCursor: null })
+  test('binds the repository to the actor workspace, never to the query', async () => {
+    const bound: string[] = []
+
+    const routes = createProjectRoutes({
+      createRepository: (organizationId) => {
+        bound.push(organizationId)
+        return repositoryStub()
       },
+      generateId: () => 'generated-id',
+      resolveActor: actorAs('member'),
     })
 
-    await get('/api/projects?organizationId=workspace_2', actorAs('member'), repository)
+    await routes.handle(new Request('http://localhost/api/projects?organizationId=workspace_2'))
 
-    expect(seen).toEqual(['workspace_1'])
+    // The tenant is bound once, where the session is read. No handler and no
+    // port input can carry another one (Decision 019).
+    expect(bound).toEqual(['workspace_1'])
   })
 
   test('refuses an anonymous request before reaching the repository', async () => {

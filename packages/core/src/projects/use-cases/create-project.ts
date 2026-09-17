@@ -5,7 +5,6 @@ import type { CreateProjectRequest, Project } from '../schemas'
 
 export type CreateProjectCommand = CreateProjectRequest & {
   actorUserId: string
-  organizationId: string
 }
 
 export type CreateProjectDependencies = {
@@ -30,6 +29,5 @@ export const createProject = async (
     createdByUserId: command.actorUserId,
     description: command.description?.trim() || null,
     name: command.name,
-    organizationId: command.organizationId,
     projectId: generateId(),
   })

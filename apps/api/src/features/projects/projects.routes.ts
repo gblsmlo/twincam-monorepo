@@ -17,14 +17,14 @@ import { type ActorResolver, createAuthGuard, requireActorContext } from '../aut
 import { createDrizzleProjectsRepository } from './repository'
 
 export type ProjectRouteDependencies = {
+  createRepository?: (organizationId: string) => ProjectsRepository
   generateId?: () => string
-  repository?: ProjectsRepository
   resolveActor?: ActorResolver
 }
 
 export const createProjectRoutes = ({
+  createRepository = createDrizzleProjectsRepository,
   generateId = () => crypto.randomUUID(),
-  repository = createDrizzleProjectsRepository(),
   resolveActor,
 }: ProjectRouteDependencies = {}) =>
   new Elysia({ prefix: '/api/projects' })
@@ -35,25 +35,23 @@ export const createProjectRoutes = ({
     .derive({ as: 'local' }, ({ actorContext }) => {
       const actor = requireActorContext(actorContext)
 
+      // The repository is built here, bound to the session's workspace, and it
+      // is the only place that reads the organization. No handler can hand a
+      // tenant to persistence, correctly or otherwise (Decision 019).
       return {
         actorRole: actor.role,
         actorUserId: actor.userId,
-        organizationId: actor.organizationId,
+        repository: createRepository(actor.organizationId),
       }
     })
     .onError(mapValidationError)
     .get(
       '/',
-      async ({ organizationId, query, set }) => {
+      async ({ query, repository, set }) => {
         // No use-case trigger applies to a filtered read: it loads no second
         // entity, evaluates no policy and generates no id. The route calls the
         // port, and no module exists only to forward a method.
-        const result = await repository.listProjects({
-          cursor: query.cursor,
-          organizationId,
-          q: query.q,
-          status: query.status,
-        })
+        const result = await repository.listProjects(query)
 
         if (isErr(result)) {
           const { body, status } = toHttpErrorResponse(result.error)
@@ -71,9 +69,9 @@ export const createProjectRoutes = ({
     )
     .post(
       '/',
-      async ({ actorUserId, body, organizationId, set }) => {
+      async ({ actorUserId, body, repository, set }) => {
         const result = await createProjectUseCase(
-          { ...body, actorUserId, organizationId },
+          { ...body, actorUserId },
           { generateId, repository },
         )
 
@@ -96,9 +94,9 @@ export const createProjectRoutes = ({
     // of the operation is what the audit trail and the client read.
     .post(
       '/:projectId/archive',
-      async ({ actorRole, organizationId, params, set }) => {
+      async ({ actorRole, params, repository, set }) => {
         const result = await archiveProjectUseCase(
-          { actorRole, organizationId, projectId: params.projectId },
+          { actorRole, projectId: params.projectId },
           repository,
         )
 

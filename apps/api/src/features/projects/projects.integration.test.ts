@@ -17,7 +17,7 @@ import { eq, sql } from 'drizzle-orm'
 import { requirePostgres } from '../../test/postgres'
 import { createDrizzleProjectsRepository } from './repository'
 
-const repository = createDrizzleProjectsRepository()
+const repositoryFor = createDrizzleProjectsRepository
 const createdOrganizationIds: string[] = []
 const userId = `user_${crypto.randomUUID()}`
 
@@ -31,11 +31,10 @@ const createOrganization = async (): Promise<string> => {
 }
 
 const insertProject = (organizationId: string, name: string) =>
-  repository.createProject({
+  repositoryFor(organizationId).createProject({
     createdByUserId: userId,
     description: null,
     name,
-    organizationId,
     projectId: `project_${crypto.randomUUID()}`,
   })
 
@@ -94,7 +93,7 @@ describe('projects tenant isolation', () => {
     await insertProject(first, 'Plano de contas')
     await insertProject(second, 'Plano de contas')
 
-    const page = await repository.listProjects({ organizationId: first })
+    const page = await repositoryFor(first).listProjects({})
 
     expect(isOk(page)).toBe(true)
     expect(isOk(page) && page.value.items.map((item) => item.name)).toEqual(['Plano de contas'])
@@ -118,7 +117,7 @@ describe('projects tenant isolation', () => {
 
     expect(failureText(failure)).toMatch(/row-level security/i)
 
-    const page = await repository.listProjects({ organizationId: second })
+    const page = await repositoryFor(second).listProjects({})
     expect(isOk(page) && page.value.items).toHaveLength(0)
   })
 
@@ -153,7 +152,7 @@ describe('projects tenant isolation', () => {
 
     await expect(failed).rejects.toThrow('deliberate failure inside the workspace transaction')
 
-    const page = await repository.listProjects({ organizationId })
+    const page = await repositoryFor(organizationId).listProjects({})
 
     expect(isOk(page) && page.value.items).toEqual([])
 
@@ -186,10 +185,10 @@ describe('projects persistence', () => {
     await insertProject(organizationId, 'Descoberta')
     await insertProject(organizationId, '100% cobertura')
 
-    const found = await repository.listProjects({ organizationId, q: 'desc' })
+    const found = await repositoryFor(organizationId).listProjects({ q: 'desc' })
     expect(isOk(found) && found.value.items.map((item) => item.name)).toEqual(['Descoberta'])
 
-    const literal = await repository.listProjects({ organizationId, q: '100%' })
+    const literal = await repositoryFor(organizationId).listProjects({ q: '100%' })
     expect(isOk(literal) && literal.value.items.map((item) => item.name)).toEqual([
       '100% cobertura',
     ])
@@ -202,12 +201,12 @@ describe('projects persistence', () => {
       await insertProject(organizationId, `Projeto ${String(index).padStart(2, '0')}`)
     }
 
-    const first = await repository.listProjects({ organizationId })
+    const first = await repositoryFor(organizationId).listProjects({})
     expect(isOk(first) && first.value.items).toHaveLength(20)
     expect(isOk(first) && first.value.nextCursor).not.toBeNull()
 
     const cursor = isOk(first) ? (first.value.nextCursor ?? undefined) : undefined
-    const second = await repository.listProjects({ cursor, organizationId })
+    const second = await repositoryFor(organizationId).listProjects({ cursor })
 
     expect(isOk(second) && second.value.items).toHaveLength(1)
     expect(isOk(second) && second.value.nextCursor).toBeNull()
@@ -223,7 +222,7 @@ describe('projects persistence', () => {
   test('refuses a cursor it did not issue', async () => {
     const organizationId = await createOrganization()
 
-    const result = await repository.listProjects({ cursor: 'not-a-cursor', organizationId })
+    const result = await repositoryFor(organizationId).listProjects({ cursor: 'not-a-cursor' })
 
     expect(isErr(result)).toBe(true)
     expect(isErr(result) && result.error.kind).toBe('validation')
@@ -234,11 +233,11 @@ describe('projects persistence', () => {
     const created = await insertProject(organizationId, 'Encerramento')
     const projectId = isOk(created) ? created.value.id : ''
 
-    const archived = await repository.archiveProject({ organizationId, projectId })
+    const archived = await repositoryFor(organizationId).archiveProject({ projectId })
     expect(isOk(archived) && archived.value.status).toBe('archived')
     expect(isOk(archived) && archived.value.updatedAt > archived.value.createdAt).toBe(true)
 
-    const again = await repository.archiveProject({ organizationId, projectId })
+    const again = await repositoryFor(organizationId).archiveProject({ projectId })
     expect(isErr(again) && again.error.kind).toBe('conflict')
   })
 
@@ -248,7 +247,7 @@ describe('projects persistence', () => {
     const created = await insertProject(owner, 'Alheio')
     const projectId = isOk(created) ? created.value.id : ''
 
-    const result = await repository.archiveProject({ organizationId: stranger, projectId })
+    const result = await repositoryFor(stranger).archiveProject({ projectId })
 
     expect(isErr(result) && result.error.kind).toBe('not_found')
   })

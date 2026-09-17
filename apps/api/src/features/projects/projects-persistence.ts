@@ -15,8 +15,8 @@ import type {
 } from '@twincam/core/projects'
 import { projectErrorCodes } from '@twincam/core/projects'
 import { type Result, err, ok } from '@twincam/core/result'
+import type { WorkspaceTx } from '@twincam/infra-database/client'
 import { projects } from '@twincam/infra-database/schema'
-import { withWorkspaceTransaction } from '@twincam/infra-database/workspace'
 import { and, desc, eq, ilike, sql } from 'drizzle-orm'
 
 import { mapProject, projectSelect } from './projects.mapper'
@@ -59,93 +59,39 @@ export const decodeProjectCursor = (cursor: string): ProjectCursor | null => {
 const escapeLikePattern = (value: string): string =>
   value.replace(/[\\%_]/g, (match) => `\\${match}`)
 
-export const listProjects = async (
-  filter: ProjectListFilter,
-): Promise<Result<ProjectListPage, DomainError<'validation'>>> => {
-  const cursor = filter.cursor ? decodeProjectCursor(filter.cursor) : null
-
-  if (filter.cursor && !cursor) {
-    return err(
-      validationError(
-        projectErrorCodes.invalidCursor,
-        'O cursor da listagem é inválido. Recarregue a lista.',
-      ),
-    )
-  }
-
-  const rows = await withWorkspaceTransaction(filter.organizationId, (tx) =>
-    tx
-      .select(projectSelect)
-      .from(projects)
-      .where(
-        and(
-          // Redundant with the policy, and kept: it states the invariant where
-          // the query is read, and survives a role that bypasses RLS.
-          eq(projects.organizationId, filter.organizationId),
-          filter.status ? eq(projects.status, filter.status) : undefined,
-          filter.q ? ilike(projects.name, `%${escapeLikePattern(filter.q)}%`) : undefined,
-          cursor
-            ? sql`(${projects.createdAt}, ${projects.id}) < (${cursor.createdAt}::timestamptz, ${cursor.id})`
-            : undefined,
-        ),
-      )
-      .orderBy(desc(projects.createdAt), desc(projects.id))
-      // One extra row answers "is there a next page" without a second count.
-      .limit(PAGE_SIZE + 1),
-  )
-
-  const page = rows.slice(0, PAGE_SIZE)
-  const last = page.at(-1)
-
-  return ok({
-    items: page.map(mapProject),
-    nextCursor: rows.length > PAGE_SIZE && last ? encodeProjectCursor(last) : null,
-  })
+export type ProjectsOperations = {
+  archiveProject(
+    input: ArchiveProjectInput,
+  ): Promise<Result<Project, DomainError<'conflict' | 'not_found'>>>
+  createProject(input: CreateProjectInput): Promise<Result<Project, DomainError<'conflict'>>>
+  listProjects(
+    filter: ProjectListFilter,
+  ): Promise<Result<ProjectListPage, DomainError<'validation'>>>
 }
 
-export const createProject = async (
-  input: CreateProjectInput,
-): Promise<Result<Project, DomainError<'conflict'>>> =>
-  withWorkspaceTransaction(input.organizationId, async (tx) => {
-    const [row] = await tx
-      .insert(projects)
-      .values({
-        createdByUserId: input.createdByUserId,
-        description: input.description,
-        id: input.projectId,
-        name: input.name,
-        organizationId: input.organizationId,
-      })
-      // The unique index decides the conflict, so two concurrent requests cannot
-      // both pass. Reading the driver message to classify it would depend on
-      // wording that is not a contract.
-      .onConflictDoNothing({ target: [projects.organizationId, projects.name] })
-      .returning(projectSelect)
-
-    if (!row) {
-      return err(
-        conflictError(
-          projectErrorCodes.nameTaken,
-          'Já existe um projeto com este nome nesta organização.',
-        ),
-      )
-    }
-
-    return ok(mapProject(row))
-  })
-
-export const archiveProject = async (
-  input: ArchiveProjectInput,
-): Promise<Result<Project, DomainError<'conflict' | 'not_found'>>> =>
-  withWorkspaceTransaction(input.organizationId, async (tx) => {
+/**
+ * The operations, bound to a transaction they did not open.
+ *
+ * An operation that opens its own transaction cannot be composed with another:
+ * it has already committed when the caller's next write fails. Keeping the
+ * boundary out of here is what lets `repository.ts` decide where a transaction
+ * begins and ends (Decision 019).
+ *
+ * The organization is bound once, at construction, and never travels field by
+ * field through the inputs: there is no call site left that could pass the
+ * wrong tenant to one of the three.
+ */
+export const createProjectsOperations = (
+  tx: WorkspaceTx,
+  organizationId: string,
+): ProjectsOperations => ({
+  archiveProject: async (input) => {
     // Read and write share the invariant "an active project becomes archived
     // once", so they share the transaction and the lock.
     const [current] = await tx
       .select({ id: projects.id, status: projects.status })
       .from(projects)
-      .where(
-        and(eq(projects.organizationId, input.organizationId), eq(projects.id, input.projectId)),
-      )
+      .where(and(eq(projects.organizationId, organizationId), eq(projects.id, input.projectId)))
       .for('update')
 
     if (!current) {
@@ -163,9 +109,7 @@ export const archiveProject = async (
     const [row] = await tx
       .update(projects)
       .set({ status: 'archived', updatedAt: sql`now()` })
-      .where(
-        and(eq(projects.organizationId, input.organizationId), eq(projects.id, input.projectId)),
-      )
+      .where(and(eq(projects.organizationId, organizationId), eq(projects.id, input.projectId)))
       .returning(projectSelect)
 
     if (!row) {
@@ -174,4 +118,73 @@ export const archiveProject = async (
     }
 
     return ok(mapProject(row))
-  })
+  },
+
+  createProject: async (input) => {
+    const [row] = await tx
+      .insert(projects)
+      .values({
+        createdByUserId: input.createdByUserId,
+        description: input.description,
+        id: input.projectId,
+        name: input.name,
+        organizationId,
+      })
+      // The unique index decides the conflict, so two concurrent requests cannot
+      // both pass. Reading the driver message to classify it would depend on
+      // wording that is not a contract.
+      .onConflictDoNothing({ target: [projects.organizationId, projects.name] })
+      .returning(projectSelect)
+
+    if (!row) {
+      return err(
+        conflictError(
+          projectErrorCodes.nameTaken,
+          'Já existe um projeto com este nome nesta organização.',
+        ),
+      )
+    }
+
+    return ok(mapProject(row))
+  },
+
+  listProjects: async (filter) => {
+    const cursor = filter.cursor ? decodeProjectCursor(filter.cursor) : null
+
+    if (filter.cursor && !cursor) {
+      return err(
+        validationError(
+          projectErrorCodes.invalidCursor,
+          'O cursor da listagem é inválido. Recarregue a lista.',
+        ),
+      )
+    }
+
+    const rows = await tx
+      .select(projectSelect)
+      .from(projects)
+      .where(
+        and(
+          // Redundant with the policy, and kept: it states the invariant where
+          // the query is read, and survives a role that bypasses RLS.
+          eq(projects.organizationId, organizationId),
+          filter.status ? eq(projects.status, filter.status) : undefined,
+          filter.q ? ilike(projects.name, `%${escapeLikePattern(filter.q)}%`) : undefined,
+          cursor
+            ? sql`(${projects.createdAt}, ${projects.id}) < (${cursor.createdAt}::timestamptz, ${cursor.id})`
+            : undefined,
+        ),
+      )
+      .orderBy(desc(projects.createdAt), desc(projects.id))
+      // One extra row answers "is there a next page" without a second count.
+      .limit(PAGE_SIZE + 1)
+
+    const page = rows.slice(0, PAGE_SIZE)
+    const last = page.at(-1)
+
+    return ok({
+      items: page.map(mapProject),
+      nextCursor: rows.length > PAGE_SIZE && last ? encodeProjectCursor(last) : null,
+    })
+  },
+})

@@ -38,7 +38,7 @@ describe('createProject', () => {
     const repository = repositoryWith(ok(project()), received)
 
     await createProject(
-      { actorUserId: 'user-1', name: 'Onboarding', organizationId: 'org-1' },
+      { actorUserId: 'user-1', name: 'Onboarding' },
       { generateId: () => 'generated-id', repository },
     )
 
@@ -51,7 +51,7 @@ describe('createProject', () => {
     const repository = repositoryWith(ok(project()), received)
 
     await createProject(
-      { actorUserId: 'user-1', description: '   ', name: 'Onboarding', organizationId: 'org-1' },
+      { actorUserId: 'user-1', description: '   ', name: 'Onboarding' },
       { generateId: () => 'generated-id', repository },
     )
 
@@ -67,7 +67,6 @@ describe('createProject', () => {
         actorUserId: 'user-1',
         description: 'Primeira entrega',
         name: 'Onboarding',
-        organizationId: 'org-1',
       },
       { generateId: () => 'generated-id', repository },
     )
@@ -79,7 +78,7 @@ describe('createProject', () => {
     const repository = repositoryWith(ok(project({ id: 'project-9' })))
 
     const result = await createProject(
-      { actorUserId: 'user-1', name: 'Onboarding', organizationId: 'org-1' },
+      { actorUserId: 'user-1', name: 'Onboarding' },
       { generateId: () => 'generated-id', repository },
     )
 
@@ -93,7 +92,7 @@ describe('createProject', () => {
     )
 
     const result = await createProject(
-      { actorUserId: 'user-1', name: 'Onboarding', organizationId: 'org-1' },
+      { actorUserId: 'user-1', name: 'Onboarding' },
       { generateId: () => 'generated-id', repository },
     )
 

@@ -22,9 +22,9 @@ What it proves, and where:
 | What the use cases need from persistence | `@twincam/core/projects` § `contracts.ts` |
 | Who may archive, id generation, description normalization | `@twincam/core/projects` § `use-cases/` |
 | HTTP surface, status, actor context | `projects.routes.ts` |
-| Queries, transaction, cursor, constraint classification | `projects-persistence.ts` |
+| Queries, cursor, constraint classification | `projects-persistence.ts` |
 | Row → contract conversion, and the read projection | `projects.mapper.ts` |
-| Composition of the port | `repository.ts` |
+| The transaction boundary, and the workspace binding | `repository.ts` |
 | Journey, URL state, cache, form | `apps/web/src/features/projects/` |
 
 ## Flow
@@ -35,8 +35,9 @@ POST /api/projects
   -> derive({ as: 'local' })      actorContext -> organizationId, role, userId
   -> body: createProjectRequestSchema
   -> createProject(command, { generateId, repository })
-  -> repository.createProject
+  -> repository.createProject     opens the transaction (Decision 019)
   -> withWorkspaceTransaction     set_config + SET LOCAL ROLE (Decision 017)
+  -> operations.createProject     runs inside it, and opens none of its own
   -> insert ... onConflictDoNothing -> Result
   -> 201 { project } | 409 { error: { code: 'project_name_taken' } }
 ```
@@ -53,6 +54,7 @@ exists only to forward a method is the thing this omission demonstrates.
 | Add a filter to the listing | `projectListQuerySchema`, then `listProjects` |
 | Add a state transition | a use case, then a `POST /:projectId/<verb>` route |
 | Change who may archive | `canArchiveProject`, read by the use case and by the route file |
+| Make two writes atomic | one entry in `repository.ts` running both inside a single `inWorkspace` |
 | Change the copy of an error | the `message` in the adapter; the `code` is contract |
 
 ## Adding an operation
@@ -60,7 +62,8 @@ exists only to forward a method is the thing this omission demonstrates.
 1. Does the route need a policy, more than one entity, a generated id, reuse or
    more than one repository call? If not, extend the port and call it directly.
 2. Put the schema in `@twincam/core/projects`, never inline in the route.
-3. Implement in `projects-persistence.ts`; `repository.ts` only composes.
+3. Implement in `projects-persistence.ts`, as an operation that receives the
+   transaction and opens none. `repository.ts` decides the boundary.
 4. Classify the expected constraint failure at the persistence boundary and
    return a `Result`. A driver message is never a contract.
 5. Cover it in `projects.routes.test.ts` with an injected repository, and in
@@ -79,6 +82,8 @@ None in this slice. The two in the workspace boundary are listed in
 - A `where` without the organization, on the grounds that the policy covers it.
 - A driver message inspected by substring to classify a conflict.
 - A `repository.ts` that grew SQL, a `*Row` type or a mapper.
+- An operation that opens its own transaction, which no caller can then compose
+  with a second write (Decision 019).
 
 ## Removing this slice
 

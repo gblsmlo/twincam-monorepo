@@ -20,7 +20,6 @@ export const canArchiveProject = (actorRole: string): boolean => archiveRoles.in
 
 export type ArchiveProjectCommand = {
   actorRole: string
-  organizationId: string
   projectId: string
 }
 
@@ -37,8 +36,5 @@ export const archiveProject = async (
     )
   }
 
-  return repository.archiveProject({
-    organizationId: command.organizationId,
-    projectId: command.projectId,
-  })
+  return repository.archiveProject({ projectId: command.projectId })
 }

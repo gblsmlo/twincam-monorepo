@@ -34,7 +34,7 @@ const repositoryReturning = (
 describe('archiveProject', () => {
   test('archives for an owner', async () => {
     const result = await archiveProject(
-      { actorRole: 'owner', organizationId: 'org-1', projectId: 'project-1' },
+      { actorRole: 'owner', projectId: 'project-1' },
       repositoryReturning(ok(archived)),
     )
 
@@ -44,7 +44,7 @@ describe('archiveProject', () => {
 
   test('archives for an admin', async () => {
     const result = await archiveProject(
-      { actorRole: 'admin', organizationId: 'org-1', projectId: 'project-1' },
+      { actorRole: 'admin', projectId: 'project-1' },
       repositoryReturning(ok(archived)),
     )
 
@@ -55,7 +55,7 @@ describe('archiveProject', () => {
     const received: ArchiveProjectInput[] = []
 
     const result = await archiveProject(
-      { actorRole: 'member', organizationId: 'org-1', projectId: 'project-1' },
+      { actorRole: 'member', projectId: 'project-1' },
       repositoryReturning(ok(archived), received),
     )
 
@@ -65,20 +65,20 @@ describe('archiveProject', () => {
     expect(received).toEqual([])
   })
 
-  test('carries the organization from the command, never from the project id', async () => {
+  test('asks the repository for the project only — the workspace is already bound', async () => {
     const received: ArchiveProjectInput[] = []
 
     await archiveProject(
-      { actorRole: 'owner', organizationId: 'org-1', projectId: 'project-1' },
+      { actorRole: 'owner', projectId: 'project-1' },
       repositoryReturning(ok(archived), received),
     )
 
-    expect(received[0]).toEqual({ organizationId: 'org-1', projectId: 'project-1' })
+    expect(received[0]).toEqual({ projectId: 'project-1' })
   })
 
   test('surfaces the missing project the adapter reported', async () => {
     const result = await archiveProject(
-      { actorRole: 'owner', organizationId: 'org-1', projectId: 'missing' },
+      { actorRole: 'owner', projectId: 'missing' },
       repositoryReturning(
         err(notFoundError(projectErrorCodes.notFound, 'Projeto não encontrado.')),
       ),
