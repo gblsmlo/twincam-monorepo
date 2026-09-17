@@ -4,6 +4,7 @@ import { Elysia } from 'elysia'
 
 import { createAuthHandlerRoutes, createAuthRoutes } from './features/auth'
 import { createHealthResponse } from './features/health'
+import { createProjectRoutes } from './features/projects'
 import { createUserRoutes } from './features/users'
 import { mapValidationError } from './libs/http-errors'
 
@@ -21,5 +22,6 @@ export const createApp = () =>
     .use(createAuthHandlerRoutes())
     .use(createAuthRoutes())
     .use(createUserRoutes())
+    .use(createProjectRoutes())
 
 export type App = ReturnType<typeof createApp>

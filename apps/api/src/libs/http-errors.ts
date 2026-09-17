@@ -1,4 +1,6 @@
-import { z } from 'zod'
+import { errorEnvelopeSchema } from '@twincam/core/contracts/http'
+
+export { errorEnvelopeSchema }
 
 export const badRequest = (message: string) => ({
   error: {
@@ -12,13 +14,6 @@ export const internalError = (message: string) => ({
     code: 'internal_error',
     message,
   },
-})
-
-export const errorEnvelopeSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
 })
 
 /**

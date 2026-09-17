@@ -25,6 +25,7 @@ export const createOpenAPIPlugin = () =>
         { name: 'Health', description: 'Service status' },
         { name: 'Auth', description: 'Sign-up and session' },
         { name: 'Users', description: 'Authenticated user' },
+        { name: 'Projects', description: 'Tenant-owned projects' },
       ],
     },
     mapJsonSchema: {
