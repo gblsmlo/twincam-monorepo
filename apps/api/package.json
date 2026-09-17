@@ -9,6 +9,7 @@
     "build": "bun build src/server.ts --outdir dist --target bun",
     "dev": "bun --env-file ../../.env --watch src/server.ts",
     "test": "bun test --env-file ../../.env",
+    "test:integration": "bun test --env-file ../../.env integration",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
