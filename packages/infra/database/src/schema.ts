@@ -1,9 +1,10 @@
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
   boolean,
   index,
   integer,
   jsonb,
+  pgPolicy,
   pgTable,
   text,
   timestamp,
@@ -172,6 +173,46 @@ export const notificationOutbox = pgTable(
   ],
 )
 
+/**
+ * The first tenant-owned table, and the shape every business table copies: an
+ * `organization_id`, a policy that compares it with the workspace context the
+ * transaction applies, and `FORCE ROW LEVEL SECURITY` in the migration, without
+ * which the owner role — the one the runtime connects as — bypasses the policy
+ * and the isolation tests pass for the wrong reason.
+ *
+ * `current_setting('app.workspace_id', true)` returns NULL with no context, and
+ * the comparison filters every row: reading outside the workspace transaction
+ * sees nothing instead of seeing everything.
+ */
+export const projects = pgTable(
+  'projects',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    description: text('description'),
+    status: text('status').notNull().default('active'),
+    createdByUserId: text('created_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('projects_organization_id_created_at_idx').on(table.organizationId, table.createdAt),
+    uniqueIndex('projects_organization_id_name_unique').on(table.organizationId, table.name),
+    pgPolicy('projects_workspace_isolation', {
+      as: 'permissive',
+      for: 'all',
+      to: 'public',
+      using: sql`organization_id = current_setting('app.workspace_id', true)`,
+      withCheck: sql`organization_id = current_setting('app.workspace_id', true)`,
+    }),
+  ],
+)
+
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   invitations: many(invitations),
@@ -200,4 +241,5 @@ export const authSchema = {
 export const databaseSchema = {
   ...authSchema,
   notificationOutbox,
+  projects,
 }

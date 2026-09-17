@@ -35,6 +35,31 @@ const readWorkspaceContext = async (tx: WorkspaceExecutor) => {
   return rows[0]?.workspace_id ?? null
 }
 
+/**
+ * The role every tenant-aware statement runs as. It owns nothing and cannot log
+ * in: it exists so row level security has a role to apply to, since the policy
+ * is invisible to the owner and to any superuser. Created by the migration that
+ * introduced the first tenant-owned table.
+ */
+export const WORKSPACE_RUNTIME_ROLE = 'twincam_workspace'
+
+/**
+ * `SET ROLE` takes no parameter, so the identifier is interpolated. It is this
+ * module constant and never external input, and `SET LOCAL` reverts it when the
+ * transaction ends — a pooled connection never carries the role to the next
+ * caller.
+ */
+const enterWorkspaceRole = async <Tx extends WorkspaceExecutor>(tx: Tx): Promise<void> => {
+  try {
+    await tx.execute(sql`set local role ${sql.raw(WORKSPACE_RUNTIME_ROLE)}`)
+  } catch (cause) {
+    throw new Error(
+      `The workspace role "${WORKSPACE_RUNTIME_ROLE}" is missing. Apply the migrations with \`bun run db:migrate\`.`,
+      { cause },
+    )
+  }
+}
+
 export const applyWorkspaceContext = async <Tx extends WorkspaceExecutor>(
   tx: Tx,
   workspaceId: string,
@@ -45,6 +70,8 @@ export const applyWorkspaceContext = async <Tx extends WorkspaceExecutor>(
   if (currentWorkspaceId !== workspaceId) {
     throw new Error('Workspace database context was not applied')
   }
+
+  await enterWorkspaceRole(tx)
 }
 
 export const applyActorContext = async <Tx extends WorkspaceExecutor>(
