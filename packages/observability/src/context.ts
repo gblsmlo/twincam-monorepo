@@ -5,7 +5,7 @@ export type ObservabilityContext = {
   workspaceId?: string
 }
 
-export const createRequestId = () => crypto.randomUUID()
+const createRequestId = () => crypto.randomUUID()
 
 export const createObservabilityContext = (
   context: Partial<ObservabilityContext> = {},

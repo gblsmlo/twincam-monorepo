@@ -11,7 +11,6 @@
     "./client": "./src/client.ts",
     "./migration": "./src/migration.ts",
     "./server": "./src/server.ts",
-    "./spike": "./src/spike.ts",
     "./web-server": "./src/web-server.ts"
   },
   "dependencies": {

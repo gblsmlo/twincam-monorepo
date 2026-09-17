@@ -8,8 +8,8 @@ application and never imports `@twincam/auth`.
 | Subpath | Use |
 | --- | --- |
 | `./schema` | tables, indexes and policies |
-| `./client` | the pool and `WorkspaceTx` |
-| `./workspace` | `withWorkspaceTransaction`, `withActorWorkspaceTransaction` |
+| `./client` | `db` and the `WorkspaceTx` type; the pool is internal |
+| `./workspace` | `withWorkspaceTransaction` and the workspace role |
 | `./schemas/projects` | internal write schema derived with `drizzle-zod` |
 
 No raw SQL executor is exported. That absence is what keeps the Drizzle builder

@@ -47,7 +47,7 @@ isolamento. É a segunda das quatro fases de construção: o port já existe.
 | 3b | `apps/api/src/features/projects/repository.ts` | a forma de referência: operações recebem `tx`, o composition root abre (Decisão 019) |
 | 4 | Decisão 003 | composição por responsabilidade coesa |
 | 5 | `packages/infra/database/src/schema.ts` | constraint, índice e coluna reais; `organization_id` é a coluna tenant |
-| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`, `withActorWorkspaceTransaction`; a transação entra no papel restrito (Decisão 017) |
+| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`; a transação entra no papel restrito (Decisão 017) |
 | 7 | Decisão 002 § What each layer validates | row não é contrato |
 
 **O que o starter tem hoje:** as tabelas de identidade do Better Auth
@@ -102,8 +102,8 @@ aplicação.
 
 ## Passo 2 — A transação de workspace
 
-Toda operação em tabela tenant-aware entra por `withWorkspaceTransaction` ou
-`withActorWorkspaceTransaction`, de `@twincam/infra-database/workspace`. O
+Toda operação em tabela tenant-aware entra por `withWorkspaceTransaction`, de
+`@twincam/infra-database/workspace`. O
 helper aplica `set_config('app.workspace_id', <id>, true)` **dentro** da
 transação e confere que foi aplicado; o `tx` entregue é o `WorkspaceTx` com o
 builder completo, não um executor só de SQL.
@@ -282,7 +282,7 @@ quando aparecer um ciclo entre packages ou regra condicional por export
 | 2 | Nenhum SQL completo novo sem owner, categoria, justificativa e teste no README do módulo | 004 |
 | 3 | Lock de linha e CTE feitos pelo builder, não por SQL completo | 004 |
 | 4 | Nenhum `sql.raw()` com entrada externa; nenhum identificador concatenado | 004 |
-| 5 | Toda operação tenant-aware dentro de `withWorkspaceTransaction`/`withActorWorkspaceTransaction` | baseline |
+| 5 | Toda operação tenant-aware dentro de `withWorkspaceTransaction` | baseline |
 | 6 | `organizationId` vem do contexto autenticado, não de input do cliente | baseline |
 | 7 | Filtro explícito de `organizationId` no `where`, além do RLS | baseline |
 | 8 | Operações que compartilham invariante na mesma transação | 003 |

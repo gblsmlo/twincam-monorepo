@@ -16,11 +16,10 @@ packages/infra/env/src/
   web-server.ts   the web SSR process: where the API listens
   migration.ts    Drizzle Kit and administrative migration tasks
   client.ts       public variables only, VITE_* prefix
-  spike.ts        flags for destructive local spikes
 ```
 
-The `exports` map publishes `./server`, `./web-server`, `./migration`,
-`./client` and `./spike`. The root import exists only to keep the package
+The `exports` map publishes `./server`, `./web-server`, `./migration` and
+`./client`. The root import exists only to keep the package
 resolvable and exports no value. Runtime code imports the subpath of its own
 process, so the client, Drizzle Kit, scripts and shared packages never load a
 variable that does not belong to them.
@@ -47,7 +46,6 @@ environment.
 | `BETTER_AUTH_TRUSTED_ORIGINS` | server | comma-separated exact origins, normalized to `URL.origin` |
 | `VITE_APP_ENV` | client | `development`, `staging` or `production` |
 | `VITE_APP_NAME` | client | browser-visible product name |
-| `ALLOW_DESTRUCTIVE_SPIKES` | spike | opt-in for tests that truncate or migrate |
 | `WEB_HOST`, `WEB_PORT` | Vite | dev server bind; the E2E runner sets them |
 
 `VITE_*` variables are public by definition: they are substituted at build time
