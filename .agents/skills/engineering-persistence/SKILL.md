@@ -44,6 +44,7 @@ isolamento. É a segunda das quatro fases de construção: o port já existe.
 | 1 | A matriz de decisão em [`drizzle-first-persistence.md`](../../../docs/engineering/drizzle-first-persistence.md) § Decision matrix | a API de menor poder |
 | 2 | O port em `packages/core/src/<capability>/contracts.ts` | a operação já tem assinatura |
 | 3 | O `README.md` local da fatia em `apps/api/src/features/<feature>/`, quando existe | qual módulo já é dono, e a lista de exceções |
+| 3b | `apps/api/src/features/projects/repository.ts` | a forma de referência: operações recebem `tx`, o composition root abre (Decisão 019) |
 | 4 | Decisão 003 | composição por responsabilidade coesa |
 | 5 | `packages/infra/database/src/schema.ts` | constraint, índice e coluna reais; `organization_id` é a coluna tenant |
 | 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`, `withActorWorkspaceTransaction`; a transação entra no papel restrito (Decisão 017) |
@@ -115,8 +116,27 @@ builder completo, não um executor só de SQL.
   aplicaria a ela (Decisão 017). O filtro explícito por `organizationId` no
   `where` é defesa em profundidade e continua obrigatório — ele expressa o
   invariante no código.
+- **A operação nunca abre a transação; ela recebe.** Quem abre é o
+  `repository.ts` da fatia (Decisão 019). Uma operação que chama
+  `withWorkspaceTransaction` no próprio corpo já deu COMMIT quando a escrita
+  seguinte falha — a atomicidade deixa de ser alcançável sem reescrevê-la.
+  A sonda tem duas partes — a regra e a lista de quem abre:
+
+  ```sh
+  rg -n "withWorkspaceTransaction|db\.transaction" apps/api/src/features --glob '*-persistence.ts'
+  rg -l "withWorkspaceTransaction|db\.transaction" apps/api/src --glob '*.ts' --glob '!*.test.ts'
+  ```
+
+  A primeira tem de sair vazia. A segunda lista composition roots — hoje
+  `features/projects/repository.ts` e `features/auth/actor.ts`, que é dono da
+  própria operação porque a fatia de auth não tem port a compor.
+
 - **Operações que compartilham invariante ficam na mesma transação.** Separar
   arquivos não pode quebrar atomicidade (Decisão 003).
+- **O workspace se amarra na construção do repositório**, não campo a campo nos
+  inputs do port: `createDrizzleProjectsRepository(organizationId)`. Assim não
+  sobra chamada capaz de passar o tenant certo em dois métodos e o errado no
+  terceiro.
 - **Transação curta.** Validação pura antes de abrir; nada de HTTP, fila externa
   ou trabalho de CPU longo sob lock.
 - **Tabela de identidade global** (`users`, `sessions`, `members`, `accounts`)
@@ -259,6 +279,8 @@ quando aparecer um ciclo entre packages ou regra condicional por export
 | 6 | `organizationId` vem do contexto autenticado, não de input do cliente | baseline |
 | 7 | Filtro explícito de `organizationId` no `where`, além do RLS | baseline |
 | 8 | Operações que compartilham invariante na mesma transação | 003 |
+| 8b | Nenhuma operação abre transação; `withWorkspaceTransaction` só no composition root | 019 |
+| 8c | `organizationId` amarrado na construção do repositório, ausente dos inputs do port | 019 |
 | 9 | `repository.ts` só compõe: sem SQL, `*Row`, mapper ou regra | 003 |
 | 10 | O módulo escolhido é dono do dado, do ciclo de mudança e da transação | 003 |
 | 11 | Row convertida por mapper nomeado; nenhuma row devolvida como contrato | 002 |
@@ -335,6 +357,8 @@ entrada.
 | Executor trocado por conexão avulsa dentro do repository tenant-aware | baseline |
 | Filtro de `organizationId` omitido "porque o RLS já cobre" | baseline |
 | Escritas com invariante compartilhado separadas em transações diferentes | 003 |
+| Operação que abre a própria transação, impedindo composição atômica acima dela | 019 |
+| `organizationId` viajando campo a campo pelos inputs do port | 019 |
 | SQL, `*Row`, mapper ou regra adicionados a um `repository.ts` que já compõe | 003 |
 | Um arquivo por método do port | 003 |
 | Row Drizzle devolvida como contrato público | 002 |

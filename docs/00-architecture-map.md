@@ -33,6 +33,7 @@ When documents conflict:
 | Shared UI, compositions | `packages/patterns` | Web and Storybook through published exports |
 | HTTP routes | `apps/api/src/features/<capability>/<x>.routes.ts` | HTTP clients; no business rule of their own |
 | Persistence adapters | `apps/api/src/features/<capability>/*-persistence.ts` | The slice itself, through `repository.ts` |
+| The transaction boundary and the workspace binding | `apps/api/src/features/<capability>/repository.ts` | The slice itself |
 | API infrastructure with no capability owner | `apps/api/src/libs` | Any API slice |
 | Web routes | `apps/web/src/routes` | Router; loaders, search and thin composition |
 | Web behavior | `apps/web/src/features` | Routes and the feature's own components |
@@ -54,7 +55,8 @@ apps/api/src/
 ├── features/<capability>/
 │   ├── <x>.routes.ts + <x>.routes.test.ts
 │   ├── <x>.mapper.ts            domain -> public DTO, when the shapes differ
-│   ├── repository.ts            composition of the adapters
+│   ├── repository.ts            composition of the adapters, and the only
+│   │                             place a transaction begins (Decision 019)
 │   ├── *-persistence.ts         the adapters
 │   └── index.ts                 public surface of the slice
 ├── libs/                        HTTP errors, domain error status, idempotency

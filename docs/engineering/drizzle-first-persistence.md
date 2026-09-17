@@ -171,6 +171,12 @@ in code. Tenant-aware changes need negative coverage with two organizations,
 `WITH CHECK`, access without context and rollback. Runtime roles receive only
 the privileges they need.
 
+The operation in the example receives `tx`; it does not open it. The boundary
+belongs to the slice's composition root, which is what lets a second write join
+the same transaction without rewriting the first (Decision 019). A
+`withWorkspaceTransaction` inside a `*-persistence.ts` is a finding, and the
+probe is one `rg` with `--glob '*-persistence.ts'`.
+
 Keep transactions short: run pure validation before opening one, and never
 perform HTTP calls, external queue work or prolonged CPU work while locks are
 held.
