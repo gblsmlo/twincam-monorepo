@@ -8,6 +8,7 @@
     "./errors": "./src/errors.ts",
     "./primitives": "./src/primitives.ts",
     "./projects": "./src/projects/index.ts",
+    "./projects/field-rules": "./src/projects/field-rules.ts",
     "./result": "./src/result.ts"
   },
   "scripts": {

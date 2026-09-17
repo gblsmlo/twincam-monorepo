@@ -1,6 +1,8 @@
+import { projectNameRule, projectStatuses } from '@twincam/core/projects/field-rules'
 import { relations, sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -9,6 +11,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
@@ -191,7 +194,10 @@ export const projects = pgTable(
     organizationId: text('organization_id')
       .notNull()
       .references(() => organizations.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
+    // The length is the contract's, read from the same constant the contract
+    // reads: a column that accepts what the contract refuses stores rows no
+    // client could have produced (Decision 020).
+    name: varchar('name', { length: projectNameRule.max }).notNull(),
     description: text('description'),
     status: text('status').notNull().default('active'),
     createdByUserId: text('created_by_user_id').references(() => users.id, {
@@ -203,6 +209,13 @@ export const projects = pgTable(
   (table) => [
     index('projects_organization_id_created_at_idx').on(table.organizationId, table.createdAt),
     uniqueIndex('projects_organization_id_name_unique').on(table.organizationId, table.name),
+    // The catalogue is closed in the database too. `status` stays `text`, like
+    // every other status in this schema, and the constraint is what refuses a
+    // value the application never had a chance to check.
+    check(
+      'projects_status_check',
+      sql.raw(`status in (${projectStatuses.map((status) => `'${status}'`).join(', ')})`),
+    ),
     pgPolicy('projects_workspace_isolation', {
       as: 'permissive',
       for: 'all',

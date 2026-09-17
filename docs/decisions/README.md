@@ -24,7 +24,7 @@ the successor exists; the successor adds its own row here.
 | # | Decision | State |
 | ---: | --- | --- |
 | 001 | [package boundaries and dependency ownership](001-package-boundaries-and-dependency-ownership.md) | active |
-| 002 | [data flow, and what each layer validates](002-data-flow-and-layered-validation.md) | active |
+| 002 | [data flow, and what each layer validates](002-data-flow-and-layered-validation.md) | active · refined by 020 |
 | 003 | [`repository.ts` is a composition root](003-persistence-adapter-composition.md) | active · refined by 019 |
 | 004 | [Drizzle-first data access, raw SQL as a justified exception](004-drizzle-first-data-access.md) | active |
 | 005 | [Elysia route module scope: guard is `scoped`, derives are `local`](005-elysia-plugin-scope.md) | active |
@@ -42,6 +42,7 @@ the successor exists; the successor adds its own row here.
 | 017 | [tenant isolation runs under a restricted role, not under the connection's](017-tenant-isolation-runs-under-a-restricted-role.md) | active |
 | 018 | [the starter ships one reference slice, and it is removable](018-the-starter-ships-one-reference-slice.md) | active |
 | 019 | [the composition root owns the transaction boundary](019-the-composition-root-owns-the-transaction-boundary.md) | active |
+| 020 | [the column owns the field rule, the contract owns the shape](020-the-column-owns-the-field-rule.md) | active |
 
 ## Historical
 

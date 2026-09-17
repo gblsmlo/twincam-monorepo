@@ -215,8 +215,15 @@ const mapActorContext = (row: MembershipRow, userId: string): ActorContext => ({
   `EntityId` acontece no mapper — o id atravessa como string opaca (Decisão 014).
 
 Schema interno derivado com `drizzle-zod` fica em Infra
-(`packages/infra/database/src/schemas/users.ts`). Contrato público é explícito
-no Core — [`engineering-contract`](../engineering-contract/SKILL.md).
+(`packages/infra/database/src/schemas/projects.ts` é o modelo com consumidor: o
+adapter parseia a escrita com ele). Contrato público é explícito no Core —
+[`engineering-contract`](../engineering-contract/SKILL.md).
+
+**O limite do campo mora na coluna** (Decisão 020). `varchar(n)`, `check` e
+`not null` são lidos pelo `createInsertSchema` de graça; o número vem de
+`packages/core/src/<capability>/field-rules.ts`, que o contrato lê também. Uma
+coluna `text` com o limite só no Zod aceita o que o contrato recusa — e quem
+escreve sem passar pela fronteira grava.
 
 ---
 

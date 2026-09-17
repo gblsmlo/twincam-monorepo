@@ -14,11 +14,16 @@ apps/storybook -> ui, patterns; apps/web through the @features, @web, @libs alia
 core           -> zod and pure primitives
 auth           -> infra-database, infra-env, observability, Better Auth
 infra/env      -> zod and the runtime helper
-infra/database -> infra-env, observability, Drizzle, PostgreSQL, better-auth/crypto for the seed
+infra/database -> core (field rules only), infra-env, observability, Drizzle, PostgreSQL,
+                  better-auth/crypto for the seed
 observability  -> pino, pino-pretty
 patterns       -> ui, React, lucide-react           (never @features, core, router, api)
 ui             -> React, Base UI, cva, clsx, tailwind-merge, lucide-react (never core, auth, env, database)
 ```
+
+The edge from `infra/database` to `core` carries constants only — the lengths
+and closed catalogues a column and a contract must agree on (Decision 020). It
+points inward and `core` depends on nothing but Zod, so no cycle is possible.
 
 Explicit negatives: `core` never imports `infra-database`, `auth`, Elysia or
 `observability`; `infra-database` never imports `auth`, so the seed hashes the

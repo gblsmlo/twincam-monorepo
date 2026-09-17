@@ -18,6 +18,7 @@ What it proves, and where:
 
 | Responsibility | Owner |
 | --- | --- |
+| Lengths and closed catalogues | `@twincam/core/projects` § `field-rules.ts`, read by the column too |
 | Public contract, error codes | `@twincam/core/projects` § `schemas.ts` |
 | What the use cases need from persistence | `@twincam/core/projects` § `contracts.ts` |
 | Who may archive, id generation, description normalization | `@twincam/core/projects` § `use-cases/` |
@@ -50,7 +51,7 @@ exists only to forward a method is the thing this omission demonstrates.
 
 | Task | Start at |
 | --- | --- |
-| Add a field to a project | `schemas.ts`, then the table, then `projectSelect` |
+| Add a field to a project | `field-rules.ts` if it has a limit, then `schemas.ts`, the table, `projectSelect` |
 | Add a filter to the listing | `projectListQuerySchema`, then `listProjects` |
 | Add a state transition | a use case, then a `POST /:projectId/<verb>` route |
 | Change who may archive | `canArchiveProject`, read by the use case and by the route file |

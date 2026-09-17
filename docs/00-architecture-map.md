@@ -24,6 +24,7 @@ When documents conflict:
 | Public HTTP contracts | `packages/core/src/contracts` | Web and API adapters |
 | Rules, use cases and ports of a capability | `packages/core/src/<capability>` | API adapters and tests |
 | Domain primitives | `packages/core/src/primitives.ts` | Core subdomains and adapters |
+| Field rules a column and a contract must share | `packages/core/src/<capability>/field-rules.ts` | Core schemas and `packages/infra/database` |
 | `Result` and expected errors | `packages/core/src/result.ts`, `packages/core/src/errors.ts` | Use cases and adapters |
 | Persistence and SQL projections | `packages/infra/database` | API and tooling |
 | Authentication | `packages/auth` | Web and API through the published subpaths |

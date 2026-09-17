@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const projectStatuses = ['active', 'archived'] as const
+import { projectDescriptionRule, projectNameRule, projectStatuses } from './field-rules'
 
 export const projectStatusSchema = z.enum(projectStatuses)
 
@@ -9,7 +9,7 @@ export const projectSchema = z
     createdAt: z.string().datetime(),
     description: z.string().nullable(),
     id: z.string().min(1),
-    name: z.string().min(1),
+    name: z.string().min(1).max(projectNameRule.max),
     status: projectStatusSchema,
     updatedAt: z.string().datetime(),
   })
@@ -17,16 +17,21 @@ export const projectSchema = z
 
 export const createProjectRequestSchema = z
   .object({
+    // The numbers come from `field-rules`, the message included: a limit that
+    // changes without the copy changing tells the person the wrong rule.
     description: z
       .string()
       .trim()
-      .max(280, 'A descrição pode ter no máximo 280 caracteres.')
+      .max(
+        projectDescriptionRule.max,
+        `A descrição pode ter no máximo ${projectDescriptionRule.max} caracteres.`,
+      )
       .optional(),
     name: z
       .string()
       .trim()
-      .min(3, 'Informe um nome com pelo menos 3 caracteres.')
-      .max(80, 'O nome pode ter no máximo 80 caracteres.'),
+      .min(projectNameRule.min, `Informe um nome com pelo menos ${projectNameRule.min} caracteres.`)
+      .max(projectNameRule.max, `O nome pode ter no máximo ${projectNameRule.max} caracteres.`),
   })
   .strict()
 

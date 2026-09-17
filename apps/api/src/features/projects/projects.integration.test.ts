@@ -8,6 +8,7 @@
  */
 
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { projectNameRule } from '@twincam/core/projects'
 import { isErr, isOk } from '@twincam/core/result'
 import { db } from '@twincam/infra-database/client'
 import { organizations, projects, users } from '@twincam/infra-database/schema'
@@ -226,6 +227,43 @@ describe('projects persistence', () => {
 
     expect(isErr(result)).toBe(true)
     expect(isErr(result) && result.error.kind).toBe('validation')
+  })
+
+  test('the column refuses what the contract refuses, and it is the last line', async () => {
+    const organizationId = await createOrganization()
+
+    // Not through the repository: this is the path of whoever did not come
+    // through the HTTP boundary — a migration, a job, another service.
+    const failure = await rejectionOf(
+      withWorkspaceTransaction(organizationId, (tx) =>
+        tx.insert(projects).values({
+          createdByUserId: userId,
+          id: `project_${crypto.randomUUID()}`,
+          name: 'a'.repeat(projectNameRule.max + 1),
+          organizationId,
+        }),
+      ),
+    )
+
+    expect(failureText(failure)).toMatch(/too long/i)
+  })
+
+  test('the status catalogue is closed in the database, not only in the schema', async () => {
+    const organizationId = await createOrganization()
+
+    const failure = await rejectionOf(
+      withWorkspaceTransaction(organizationId, (tx) =>
+        tx.insert(projects).values({
+          createdByUserId: userId,
+          id: `project_${crypto.randomUUID()}`,
+          name: 'Fora do catálogo',
+          organizationId,
+          status: 'deleted',
+        }),
+      ),
+    )
+
+    expect(failureText(failure)).toMatch(/projects_status_check/i)
   })
 
   test('archives once, and refuses the second attempt', async () => {

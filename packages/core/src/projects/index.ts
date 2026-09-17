@@ -5,6 +5,7 @@ export type {
   ProjectListPage,
   ProjectsRepository,
 } from './contracts'
+export { projectDescriptionRule, projectNameRule, projectStatuses } from './field-rules'
 export type {
   CreateProjectRequest,
   Project,

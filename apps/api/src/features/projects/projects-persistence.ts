@@ -17,6 +17,7 @@ import { projectErrorCodes } from '@twincam/core/projects'
 import { type Result, err, ok } from '@twincam/core/result'
 import type { WorkspaceTx } from '@twincam/infra-database/client'
 import { projects } from '@twincam/infra-database/schema'
+import { projectInsertSchema } from '@twincam/infra-database/schemas/projects'
 import { and, desc, eq, ilike, sql } from 'drizzle-orm'
 
 import { mapProject, projectSelect } from './projects.mapper'
@@ -121,15 +122,20 @@ export const createProjectsOperations = (
   },
 
   createProject: async (input) => {
+    // Parsed against the schema derived from the table, so the write is checked
+    // against the column as it is, not against a copy of it. A failure here is
+    // not an expected one — the boundary already validated — so it throws.
+    const values = projectInsertSchema.parse({
+      createdByUserId: input.createdByUserId,
+      description: input.description,
+      id: input.projectId,
+      name: input.name,
+      organizationId,
+    })
+
     const [row] = await tx
       .insert(projects)
-      .values({
-        createdByUserId: input.createdByUserId,
-        description: input.description,
-        id: input.projectId,
-        name: input.name,
-        organizationId,
-      })
+      .values(values)
       // The unique index decides the conflict, so two concurrent requests cannot
       // both pass. Reading the driver message to classify it would depend on
       // wording that is not a contract.
