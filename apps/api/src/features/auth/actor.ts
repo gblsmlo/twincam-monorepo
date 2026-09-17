@@ -32,32 +32,33 @@ export const resolveSessionActorContext: ActorResolver = async (request) => {
   let organizationId = session.session.activeOrganizationId
 
   if (!organizationId) {
-    const memberships = await db
-      .select({
-        organizationId: members.organizationId,
-        role: members.role,
-      })
-      .from(members)
-      .where(eq(members.userId, session.user.id))
-      .limit(2)
+    // Reading the only membership and pinning it to the session share one
+    // invariant: a session points at an organization the user belongs to.
+    // Split across two statements, a membership revoked in between leaves the
+    // session pinned to an organization the next read then refuses with a 403.
+    organizationId = await db.transaction(async (tx) => {
+      const memberships = await tx
+        .select({
+          organizationId: members.organizationId,
+          role: members.role,
+        })
+        .from(members)
+        .where(eq(members.userId, session.user.id))
+        .limit(2)
 
-    const [onlyMembership] = memberships
+      const [onlyMembership] = memberships
 
-    if (!onlyMembership || memberships.length > 1) {
-      return {
-        ok: false,
-        status: 403,
-        code: 'no_active_workspace',
-        message: 'An active workspace is required.',
+      if (!onlyMembership || memberships.length > 1) {
+        return null
       }
-    }
 
-    organizationId = onlyMembership.organizationId
+      await tx
+        .update(sessions)
+        .set({ activeOrganizationId: onlyMembership.organizationId })
+        .where(eq(sessions.id, session.session.id))
 
-    await db
-      .update(sessions)
-      .set({ activeOrganizationId: organizationId })
-      .where(eq(sessions.id, session.session.id))
+      return onlyMembership.organizationId
+    })
   }
 
   if (!organizationId) {
