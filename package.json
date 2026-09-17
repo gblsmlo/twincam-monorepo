@@ -47,7 +47,7 @@
     "test:integration": "bun --filter @twincam/api test:integration",
     "test:unit": "bun run --filter \"@twincam/*\" test --path-ignore-patterns \"**/*.integration.test.ts\"",
     "toolchain:check": "sh scripts/check-toolchain.sh",
-    "typecheck": "bun run --filter \"@twincam/*\" typecheck && tsc -p scripts/tsconfig.json"
+    "typecheck": "bun run --filter \"@twincam/*\" typecheck && tsc -p tsconfig.e2e.json"
   },
   "config": {
     "commitizen": {

@@ -55,7 +55,7 @@ Biome is the single formatter, linter and import organizer, with
 | `lint:ci` | `biome ci --error-on-warnings .` |
 | `lint:staged` | `biome check --staged --no-errors-on-unmatched --write .` |
 | `lint:format`, `lint:unsafe` | formatter only; unsafe fixes, never in a hook |
-| `typecheck` | every workspace plus `scripts/tsconfig.json` (E2E and config files) |
+| `typecheck` | every workspace plus `tsconfig.e2e.json` — the E2E sources and `playwright.config.ts`, which belong to no workspace |
 | `test` | `bun test` in every workspace that declares it |
 | `build` | API and Web |
 | `storybook:test` | every story in headless Chromium |

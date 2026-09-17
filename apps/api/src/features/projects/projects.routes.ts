@@ -29,15 +29,10 @@ export const createProjectRoutes = ({
 }: ProjectRouteDependencies = {}) =>
   new Elysia({ prefix: '/api/projects' })
     .use(createAuthGuard(resolveActor ? { resolveActor } : {}))
-    // `local`, not `scoped`: with `scoped` this reaches modules registered after
-    // this one in `createApp()`, and a route with no guard would run it and fail
-    // with a 500 instead of its own contract (Decision 005).
+
     .derive({ as: 'local' }, ({ actorContext }) => {
       const actor = requireActorContext(actorContext)
 
-      // The repository is built here, bound to the session's workspace, and it
-      // is the only place that reads the organization. No handler can hand a
-      // tenant to persistence, correctly or otherwise (Decision 019).
       return {
         actorRole: actor.role,
         actorUserId: actor.userId,
@@ -48,9 +43,6 @@ export const createProjectRoutes = ({
     .get(
       '/',
       async ({ query, repository, set }) => {
-        // No use-case trigger applies to a filtered read: it loads no second
-        // entity, evaluates no policy and generates no id. The route calls the
-        // port, and no module exists only to forward a method.
         const result = await repository.listProjects(query)
 
         if (isErr(result)) {
