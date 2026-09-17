@@ -21,6 +21,7 @@ import { Route as authenticatedAcceptInvitationRouteImport } from './routes/(aut
 import { Route as authenticatedDashboardRouteImport } from './routes/(authenticated)/dashboard'
 import { Route as authenticatedOnboardingRouteImport } from './routes/(authenticated)/onboarding'
 import { Route as authenticatedOrganizationRouteImport } from './routes/(authenticated)/organization'
+import { Route as authenticatedProjectsRouteImport } from './routes/(authenticated)/projects'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const authenticatedOrganizationRoute =
     path: '/organization',
     getParentRoute: () => authenticatedRouteRoute,
   } as any)
+const authenticatedProjectsRoute = authenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => authenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof authenticatedDashboardRoute
   '/onboarding': typeof authenticatedOnboardingRoute
   '/organization': typeof authenticatedOrganizationRoute
+  '/projects': typeof authenticatedProjectsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof authenticatedDashboardRoute
   '/onboarding': typeof authenticatedOnboardingRoute
   '/organization': typeof authenticatedOrganizationRoute
+  '/projects': typeof authenticatedProjectsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/(authenticated)/dashboard': typeof authenticatedDashboardRoute
   '/(authenticated)/onboarding': typeof authenticatedOnboardingRoute
   '/(authenticated)/organization': typeof authenticatedOrganizationRoute
+  '/(authenticated)/projects': typeof authenticatedProjectsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/organization'
+    | '/projects'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/onboarding'
     | '/organization'
+    | '/projects'
   id:
     | '__root__'
     | '/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/(authenticated)/dashboard'
     | '/(authenticated)/onboarding'
     | '/(authenticated)/organization'
+    | '/(authenticated)/projects'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -255,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authenticatedOrganizationRouteImport
       parentRoute: typeof authenticatedRouteRoute
     }
+    '/(authenticated)/projects': {
+      id: '/(authenticated)/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof authenticatedProjectsRouteImport
+      parentRoute: typeof authenticatedRouteRoute
+    }
   }
 }
 
@@ -283,6 +302,7 @@ interface authenticatedRouteRouteChildren {
   authenticatedDashboardRoute: typeof authenticatedDashboardRoute
   authenticatedOnboardingRoute: typeof authenticatedOnboardingRoute
   authenticatedOrganizationRoute: typeof authenticatedOrganizationRoute
+  authenticatedProjectsRoute: typeof authenticatedProjectsRoute
 }
 
 const authenticatedRouteRouteChildren: authenticatedRouteRouteChildren = {
@@ -290,6 +310,7 @@ const authenticatedRouteRouteChildren: authenticatedRouteRouteChildren = {
   authenticatedDashboardRoute: authenticatedDashboardRoute,
   authenticatedOnboardingRoute: authenticatedOnboardingRoute,
   authenticatedOrganizationRoute: authenticatedOrganizationRoute,
+  authenticatedProjectsRoute: authenticatedProjectsRoute,
 }
 
 const authenticatedRouteRouteWithChildren =

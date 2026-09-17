@@ -1,6 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
-import { Building2, LayoutDashboard } from 'lucide-react'
+import { Building2, FolderKanban, LayoutDashboard } from 'lucide-react'
 
 export type AppNavAvailability = 'active' | 'planned' | 'hidden'
 
@@ -41,6 +41,13 @@ export const APP_NAV_GROUPS: readonly AppNavGroup[] = [
         id: 'dashboard',
         label: 'Dashboard',
         to: '/dashboard',
+      },
+      {
+        availability: 'active',
+        icon: FolderKanban,
+        id: 'projects',
+        label: 'Projetos',
+        to: '/projects',
       },
       {
         availability: 'active',

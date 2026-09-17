@@ -44,17 +44,19 @@ isolamento. É a segunda das quatro fases de construção: o port já existe.
 | 1 | A matriz de decisão em [`drizzle-first-persistence.md`](../../../docs/engineering/drizzle-first-persistence.md) § Decision matrix | a API de menor poder |
 | 2 | O port em `packages/core/src/<capability>/contracts.ts` | a operação já tem assinatura |
 | 3 | O `README.md` local da fatia em `apps/api/src/features/<feature>/`, quando existe | qual módulo já é dono, e a lista de exceções |
+| 3b | `apps/api/src/features/projects/repository.ts` | a forma de referência: operações recebem `tx`, o composition root abre (Decisão 019) |
 | 4 | Decisão 003 | composição por responsabilidade coesa |
 | 5 | `packages/infra/database/src/schema.ts` | constraint, índice e coluna reais; `organization_id` é a coluna tenant |
-| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`, `withActorWorkspaceTransaction` |
+| 6 | `packages/infra/database/src/workspace.ts` | `applyWorkspaceContext`, `withWorkspaceTransaction`; a transação entra no papel restrito (Decisão 017) |
 | 7 | Decisão 002 § What each layer validates | row não é contrato |
 
-**O que o starter tem hoje:** só tabelas de identidade do Better Auth
+**O que o starter tem hoje:** as tabelas de identidade do Better Auth
 (`users`, `organizations`, `members`, `invitations`, `sessions`, `accounts`,
-`two_factors`, `verifications`) e `notification_outbox`. Nenhuma tabela de
-negócio tenant-owned, nenhuma policy RLS aplicada. A primeira tabela com
-`organization_id` próprio traz a policy, a transação de workspace e a cobertura
-negativa do Passo 5 no mesmo PR.
+`two_factors`, `verifications`), `notification_outbox` e uma tabela
+tenant-owned, `projects`, com policy RLS aplicada e suíte de isolamento
+(Decisão 018). Toda tabela nova com `organization_id` próprio traz a policy, o
+`GRANT` para o papel de workspace e a cobertura negativa do Passo 5 no mesmo
+PR — `apps/api/src/features/projects/projects.integration.test.ts` é o modelo.
 
 ---
 
@@ -84,8 +86,9 @@ Lock de linha (`.for('update', { skipLocked: true })`) e CTE com `UPDATE FROM`
 são builder — **não justificam SQL completo**. As classes de exceção admitidas
 são quatro: contexto RLS (`set_config`/`current_setting`), concorrência que o
 builder não expressa com clareza, transformação set-based e JSONB/LATERAL. As
-únicas exceções existentes hoje são as chamadas de `set_config` e
-`current_setting` em `packages/infra/database/src/workspace.ts`.
+únicas exceções existentes hoje são as três chamadas em
+`packages/infra/database/src/workspace.ts` — `set_config`, `current_setting` e
+`set local role` — listadas no `README.md` daquele package.
 
 SQL completo novo exige **owner, categoria, justificativa e teste
 proporcional**, registrados no `README.md` do módulo de persistência, no mesmo
@@ -99,8 +102,8 @@ aplicação.
 
 ## Passo 2 — A transação de workspace
 
-Toda operação em tabela tenant-aware entra por `withWorkspaceTransaction` ou
-`withActorWorkspaceTransaction`, de `@twincam/infra-database/workspace`. O
+Toda operação em tabela tenant-aware entra por `withWorkspaceTransaction`, de
+`@twincam/infra-database/workspace`. O
 helper aplica `set_config('app.workspace_id', <id>, true)` **dentro** da
 transação e confere que foi aplicado; o `tx` entregue é o `WorkspaceTx` com o
 builder completo, não um executor só de SQL.
@@ -108,11 +111,32 @@ builder completo, não um executor só de SQL.
 - **`organizationId` vem do contexto autenticado** (`actorContext.organizationId`,
   resolvido em `apps/api/src/features/auth/actor.ts`), nunca de input do
   cliente.
-- **RLS é a fronteira obrigatória**; o filtro explícito por `organizationId` no
+- **RLS é a fronteira obrigatória**, e ela só existe porque a transação entra em
+  `twincam_workspace`: a conexão do runtime é dona das tabelas e a policy não se
+  aplicaria a ela (Decisão 017). O filtro explícito por `organizationId` no
   `where` é defesa em profundidade e continua obrigatório — ele expressa o
   invariante no código.
+- **A operação nunca abre a transação; ela recebe.** Quem abre é o
+  `repository.ts` da fatia (Decisão 019). Uma operação que chama
+  `withWorkspaceTransaction` no próprio corpo já deu COMMIT quando a escrita
+  seguinte falha — a atomicidade deixa de ser alcançável sem reescrevê-la.
+  A sonda tem duas partes — a regra e a lista de quem abre:
+
+  ```sh
+  rg -n "withWorkspaceTransaction|db\.transaction" apps/api/src/features --glob '*-persistence.ts'
+  rg -l "withWorkspaceTransaction|db\.transaction" apps/api/src --glob '*.ts' --glob '!*.test.ts'
+  ```
+
+  A primeira tem de sair vazia. A segunda lista composition roots — hoje
+  `features/projects/repository.ts` e `features/auth/actor.ts`, que é dono da
+  própria operação porque a fatia de auth não tem port a compor.
+
 - **Operações que compartilham invariante ficam na mesma transação.** Separar
   arquivos não pode quebrar atomicidade (Decisão 003).
+- **O workspace se amarra na construção do repositório**, não campo a campo nos
+  inputs do port: `createDrizzleProjectsRepository(organizationId)`. Assim não
+  sobra chamada capaz de passar o tenant certo em dois métodos e o errado no
+  terceiro.
 - **Transação curta.** Validação pura antes de abrir; nada de HTTP, fila externa
   ou trabalho de CPU longo sob lock.
 - **Tabela de identidade global** (`users`, `sessions`, `members`, `accounts`)
@@ -191,8 +215,15 @@ const mapActorContext = (row: MembershipRow, userId: string): ActorContext => ({
   `EntityId` acontece no mapper — o id atravessa como string opaca (Decisão 014).
 
 Schema interno derivado com `drizzle-zod` fica em Infra
-(`packages/infra/database/src/schemas/users.ts`). Contrato público é explícito
-no Core — [`engineering-contract`](../engineering-contract/SKILL.md).
+(`packages/infra/database/src/schemas/projects.ts` é o modelo com consumidor: o
+adapter parseia a escrita com ele). Contrato público é explícito no Core —
+[`engineering-contract`](../engineering-contract/SKILL.md).
+
+**O limite do campo mora na coluna** (Decisão 020). `varchar(n)`, `check` e
+`not null` são lidos pelo `createInsertSchema` de graça; o número vem de
+`packages/core/src/<capability>/field-rules.ts`, que o contrato lê também. Uma
+coluna `text` com o limite só no Zod aceita o que o contrato recusa — e quem
+escreve sem passar pela fronteira grava.
 
 ---
 
@@ -226,7 +257,7 @@ de lock e idempotência. Migration nova se valida em banco limpo antes do merge.
 
 O guardrail é a revisão contra o `README.md` do módulo de persistência e o mapa
 `exports` de `@twincam/infra-database`, que publica `./client`, `./schema`,
-`./schemas/users` e `./workspace` — nunca um executor de SQL cru (baseline §
+`./schemas/projects` e `./workspace` — nunca um executor de SQL cru (baseline §
 Decision matrix).
 
 Ao **adicionar** uma exceção: owner, categoria (`concurrency`, `rls-context`,
@@ -251,10 +282,12 @@ quando aparecer um ciclo entre packages ou regra condicional por export
 | 2 | Nenhum SQL completo novo sem owner, categoria, justificativa e teste no README do módulo | 004 |
 | 3 | Lock de linha e CTE feitos pelo builder, não por SQL completo | 004 |
 | 4 | Nenhum `sql.raw()` com entrada externa; nenhum identificador concatenado | 004 |
-| 5 | Toda operação tenant-aware dentro de `withWorkspaceTransaction`/`withActorWorkspaceTransaction` | baseline |
+| 5 | Toda operação tenant-aware dentro de `withWorkspaceTransaction` | baseline |
 | 6 | `organizationId` vem do contexto autenticado, não de input do cliente | baseline |
 | 7 | Filtro explícito de `organizationId` no `where`, além do RLS | baseline |
 | 8 | Operações que compartilham invariante na mesma transação | 003 |
+| 8b | Nenhuma operação abre transação; `withWorkspaceTransaction` só no composition root | 019 |
+| 8c | `organizationId` amarrado na construção do repositório, ausente dos inputs do port | 019 |
 | 9 | `repository.ts` só compõe: sem SQL, `*Row`, mapper ou regra | 003 |
 | 10 | O módulo escolhido é dono do dado, do ciclo de mudança e da transação | 003 |
 | 11 | Row convertida por mapper nomeado; nenhuma row devolvida como contrato | 002 |
@@ -299,9 +332,9 @@ retorna linha é exceção — invariante do código.
 **Passo 5 — a evidência.** Teste de integração com dois usuários em duas
 organizações: o membro de A não resolve contexto em B; a sessão de quem tem
 duas memberships não é fixada; rollback quando o update falha não deixa sessão
-alterada. Como as tabelas são de identidade, sem policy de workspace, os quatro
-casos do Passo 5 chegam com a **primeira tabela tenant-owned** — a fatia que a
-criar traz a policy e a suíte no mesmo PR.
+alterada. Como essas tabelas são de identidade, sem policy de workspace, os quatro casos
+do Passo 5 não se aplicam a elas: eles vivem na fatia tenant-owned, e
+`projects` é o modelo executável.
 
 **Passo 6 — exceções.** Nenhuma introduzida; o README do módulo não ganha
 entrada.
@@ -331,6 +364,8 @@ entrada.
 | Executor trocado por conexão avulsa dentro do repository tenant-aware | baseline |
 | Filtro de `organizationId` omitido "porque o RLS já cobre" | baseline |
 | Escritas com invariante compartilhado separadas em transações diferentes | 003 |
+| Operação que abre a própria transação, impedindo composição atômica acima dela | 019 |
+| `organizationId` viajando campo a campo pelos inputs do port | 019 |
 | SQL, `*Row`, mapper ou regra adicionados a um `repository.ts` que já compõe | 003 |
 | Um arquivo por método do port | 003 |
 | Row Drizzle devolvida como contrato público | 002 |

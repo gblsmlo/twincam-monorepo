@@ -10,16 +10,18 @@
     "db:studio": "bun --env-file=../../../.env drizzle-kit studio --config drizzle.config.ts --host 0.0.0.0",
     "dev": "docker compose up -d postgres",
     "dev:db:down": "docker compose stop postgres",
+    "test": "bun test --env-file ../../../.env",
     "typecheck": "tsc -p tsconfig.json"
   },
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./schemas/users": "./src/schemas/users.ts",
     "./schema": "./src/schema.ts",
+    "./schemas/projects": "./src/schemas/projects.ts",
     "./workspace": "./src/workspace.ts"
   },
   "dependencies": {
+    "@twincam/core": "workspace:*",
     "@twincam/infra-env": "workspace:*",
     "@twincam/observability": "workspace:*",
     "better-auth": "^1.6.0",

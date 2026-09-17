@@ -4,7 +4,7 @@ import { drizzle } from 'drizzle-orm/bun-sql'
 
 import { databaseSchema } from './schema'
 
-export const sqlClient = new SQL(serverEnv.DATABASE_URL, {
+const sqlClient = new SQL(serverEnv.DATABASE_URL, {
   max: serverEnv.DATABASE_POOL_MAX,
   idleTimeout: 30,
   maxLifetime: 60 * 60,

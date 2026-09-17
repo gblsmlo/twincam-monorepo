@@ -56,9 +56,11 @@ and the membership answer **which tenant** the request may access.
   removing or demoting the last owner. Invitations require a verified email and
   expire after 48 hours.
 - Tenant-owned tables carry an `organization_id` and are reached only through
-  the workspace transaction, which applies `set_config` inside the transaction.
-  Auth tables (`users`, `sessions`, `accounts`, `verifications`, `two_factors`,
-  `organizations`, `members`, `invitations`) are global and bypass it.
+  the workspace transaction, which applies `set_config` and enters the
+  restricted `twincam_workspace` role inside the transaction, so the policy
+  applies to the statement (Decision 017). Auth tables (`users`, `sessions`,
+  `accounts`, `verifications`, `two_factors`, `organizations`, `members`,
+  `invitations`) are global and bypass it.
 
 ## Identifiers at the persistence boundary
 

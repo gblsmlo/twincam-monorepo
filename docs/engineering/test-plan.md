@@ -93,8 +93,9 @@ a mirror tree of `src/`.
 ### Scope
 
 - Tenant-aware persistence: positive cases, two organizations, `WITH CHECK`,
-  no context and rollback (RLS). Tenant-owned business tables do not exist yet;
-  the first one must ship with this coverage before its data is exposed.
+  no context and rollback (RLS). `projects` is the worked example
+  (`apps/api/src/features/projects/projects.integration.test.ts`); every new
+  tenant-owned table ships this coverage before its data is exposed.
 - HTTP contracts against the real adapter (Drizzle) plus error mapping.
 - Session and actor with the real auth handler, outside the DOM.
 - Web components with Testing Library (behavior, not implementation).
@@ -114,11 +115,12 @@ a mirror tree of `src/`.
 
 ### Two classes of integration test
 
-The split is deliberate. Destructive tests (migrate, truncate, create schema)
-sit behind `test.skipIf(!destructiveSpikesEnabled)` and only run with
-`ALLOW_DESTRUCTIVE_SPIKES`. Non-destructive tests (one user per run, cleanup at
-the end) always run. Gating them would hide the class of defect they exist to
-catch: a sign-in route that returns a server error.
+The split is deliberate, and only one half exists today. Non-destructive tests
+(one user per run, cleanup at the end) always run: gating them would hide the
+class of defect they exist to catch, a sign-in route that returns a server
+error. A destructive test — one that migrates, truncates or creates a schema —
+is gated by an opt-in flag, and the flag and its helper arrive with the first
+one rather than waiting for it. None exists, so neither does the helper.
 
 The price is depending on PostgreSQL on `localhost`. That is why the integration
 prerequisite helper `requirePostgres()` fails naming the missing service instead

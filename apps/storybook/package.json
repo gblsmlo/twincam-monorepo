@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "storybook build",
     "storybook": "storybook dev --no-open --port ${PORT:-6006}",
-    "storybook:build": "storybook build",
     "storybook:test": "vitest run --project=storybook",
     "typecheck": "tsc -p tsconfig.json"
   },

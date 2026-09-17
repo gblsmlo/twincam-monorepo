@@ -55,7 +55,7 @@ Biome is the single formatter, linter and import organizer, with
 | `lint:ci` | `biome ci --error-on-warnings .` |
 | `lint:staged` | `biome check --staged --no-errors-on-unmatched --write .` |
 | `lint:format`, `lint:unsafe` | formatter only; unsafe fixes, never in a hook |
-| `typecheck` | every workspace plus `scripts/tsconfig.json` (E2E and config files) |
+| `typecheck` | every workspace plus `tsconfig.e2e.json` — the E2E sources and `playwright.config.ts`, which belong to no workspace |
 | `test` | `bun test` in every workspace that declares it |
 | `build` | API and Web |
 | `storybook:test` | every story in headless Chromium |
@@ -101,14 +101,31 @@ and gitignored.
 ## CI
 
 `.github/workflows/ci.yml` runs on pull requests to `main` and pushes to `main`,
-with `concurrency` per ref. Four jobs:
+with `concurrency` per ref. Five jobs:
 
 | Job | Runs |
 | --- | --- |
 | `quality` | toolchain check, frozen install, `lint:ci`, `typecheck`, `scripts/ci-env.sh`, `db:migrate`, `test` against PostgreSQL 17 |
 | `build` | `bun run build` |
 | `storybook` | Chromium installed from `apps/storybook`, `storybook:test` |
+| `catalog` | on `main` only, after `build` and `storybook`: `storybook:build` and the static catalog as a retained artifact |
 | `e2e` | migrate, seed, `test:e2e`, report uploaded on failure |
+
+Every job starts with `./.github/actions/setup-workspace`: the pinned Node and
+Bun, the Bun store restored from cache, and the frozen install. Keeping it in
+one composite is what stops a new job from being the one that installs cold —
+and what keeps the cache key identical everywhere.
+
+Two caches, with deliberately different keys:
+
+| Cache | Key | `restore-keys` |
+| --- | --- | --- |
+| `~/.bun/install/cache` | `bun.lock` | yes — the store is content-addressed and `--frozen-lockfile` still resolves the lockfile exactly, so an older cache only warms the download |
+| `~/.cache/ms-playwright` | the **resolved** Playwright version | no — browsers of another version would restore and the install step would consider itself satisfied |
+
+That asymmetry is the whole rule: a partial hit is safe when the cache cannot
+change the result, and a false green when it can. The Playwright version is
+read from the installed package, never from the range in the manifest.
 
 CI repeats `lint:ci` and `typecheck` because local hooks can be skipped. The
 reasons that are not obvious in the YAML live in

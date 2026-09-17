@@ -1,13 +1,17 @@
-import { relations } from 'drizzle-orm'
+import { projectNameRule, projectStatuses } from '@twincam/core/projects/field-rules'
+import { relations, sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
+  pgPolicy,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
+  varchar,
 } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
@@ -172,6 +176,56 @@ export const notificationOutbox = pgTable(
   ],
 )
 
+/**
+ * The first tenant-owned table, and the shape every business table copies: an
+ * `organization_id`, a policy that compares it with the workspace context the
+ * transaction applies, and `FORCE ROW LEVEL SECURITY` in the migration, without
+ * which the owner role — the one the runtime connects as — bypasses the policy
+ * and the isolation tests pass for the wrong reason.
+ *
+ * `current_setting('app.workspace_id', true)` returns NULL with no context, and
+ * the comparison filters every row: reading outside the workspace transaction
+ * sees nothing instead of seeing everything.
+ */
+export const projects = pgTable(
+  'projects',
+  {
+    id: text('id').primaryKey(),
+    organizationId: text('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    // The length is the contract's, read from the same constant the contract
+    // reads: a column that accepts what the contract refuses stores rows no
+    // client could have produced (Decision 020).
+    name: varchar('name', { length: projectNameRule.max }).notNull(),
+    description: text('description'),
+    status: text('status').notNull().default('active'),
+    createdByUserId: text('created_by_user_id').references(() => users.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('projects_organization_id_created_at_idx').on(table.organizationId, table.createdAt),
+    uniqueIndex('projects_organization_id_name_unique').on(table.organizationId, table.name),
+    // The catalogue is closed in the database too. `status` stays `text`, like
+    // every other status in this schema, and the constraint is what refuses a
+    // value the application never had a chance to check.
+    check(
+      'projects_status_check',
+      sql.raw(`status in (${projectStatuses.map((status) => `'${status}'`).join(', ')})`),
+    ),
+    pgPolicy('projects_workspace_isolation', {
+      as: 'permissive',
+      for: 'all',
+      to: 'public',
+      using: sql`organization_id = current_setting('app.workspace_id', true)`,
+      withCheck: sql`organization_id = current_setting('app.workspace_id', true)`,
+    }),
+  ],
+)
+
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   invitations: many(invitations),
@@ -200,4 +254,5 @@ export const authSchema = {
 export const databaseSchema = {
   ...authSchema,
   notificationOutbox,
+  projects,
 }

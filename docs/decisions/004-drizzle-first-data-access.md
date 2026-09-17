@@ -46,16 +46,17 @@ Adopt option 3: Drizzle-first for every adapter in the application.
 - Use `sql` fragments inside the builder for PostgreSQL-specific aggregates,
   casts, functions or predicates. A fragment must not turn the whole query
   into raw SQL without need.
-- The handle is the `WorkspaceTx` delivered by `withWorkspaceTransaction` or
-  `withActorWorkspaceTransaction`. It carries the full builder plus `execute`.
+- The handle is the `WorkspaceTx` delivered by `withWorkspaceTransaction`. It
+  carries the full builder plus `execute`.
   Repositories never receive a SQL-only executor.
 
 ### Allowed exceptions for `tx.execute(sql...)`
 
 Full SQL is allowed when the need falls into one of these classes:
 
-1. RLS context: `set_config` and `current_setting`, as `applyWorkspaceContext`
-   and `applyActorContext` already do.
+1. RLS context: `set_config`, `current_setting` and `SET LOCAL ROLE`, as
+   `applyWorkspaceContext` already does (Decision 017). The list of live
+   exceptions is in `packages/infra/database/README.md`.
 2. PostgreSQL concurrency: advisory locks or row locks the builder cannot
    express clearly.
 3. CTEs, `LATERAL`, JSONB expansion or set-based transforms the builder does

@@ -24,6 +24,7 @@ When documents conflict:
 | Public HTTP contracts | `packages/core/src/contracts` | Web and API adapters |
 | Rules, use cases and ports of a capability | `packages/core/src/<capability>` | API adapters and tests |
 | Domain primitives | `packages/core/src/primitives.ts` | Core subdomains and adapters |
+| Field rules a column and a contract must share | `packages/core/src/<capability>/field-rules.ts` | Core schemas and `packages/infra/database` |
 | `Result` and expected errors | `packages/core/src/result.ts`, `packages/core/src/errors.ts` | Use cases and adapters |
 | Persistence and SQL projections | `packages/infra/database` | API and tooling |
 | Authentication | `packages/auth` | Web and API through the published subpaths |
@@ -33,12 +34,14 @@ When documents conflict:
 | Shared UI, compositions | `packages/patterns` | Web and Storybook through published exports |
 | HTTP routes | `apps/api/src/features/<capability>/<x>.routes.ts` | HTTP clients; no business rule of their own |
 | Persistence adapters | `apps/api/src/features/<capability>/*-persistence.ts` | The slice itself, through `repository.ts` |
+| The transaction boundary and the workspace binding | `apps/api/src/features/<capability>/repository.ts` | The slice itself |
 | API infrastructure with no capability owner | `apps/api/src/libs` | Any API slice |
 | Web routes | `apps/web/src/routes` | Router; loaders, search and thin composition |
 | Web behavior | `apps/web/src/features` | Routes and the feature's own components |
 | Shell and navigation | `apps/web/src/layouts` | Route groups |
 | Web to API client | `apps/web/src/libs/api-client.ts` | Feature `http/` adapters |
 | Component tests in a browser | `apps/storybook` | Stories of `ui`, `patterns`, `layouts`, `features` and pages |
+| The published component catalog | `apps/storybook` build, stamped with the commit | Whoever reads the components without the code open |
 | Journeys | `e2e/` | Runs against Web and API over HTTP |
 
 ## Structure of `apps/api`
@@ -54,7 +57,8 @@ apps/api/src/
 ├── features/<capability>/
 │   ├── <x>.routes.ts + <x>.routes.test.ts
 │   ├── <x>.mapper.ts            domain -> public DTO, when the shapes differ
-│   ├── repository.ts            composition of the adapters
+│   ├── repository.ts            composition of the adapters, and the only
+│   │                             place a transaction begins (Decision 019)
 │   ├── *-persistence.ts         the adapters
 │   └── index.ts                 public surface of the slice
 ├── libs/                        HTTP errors, domain error status, idempotency

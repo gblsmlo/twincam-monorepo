@@ -8,6 +8,34 @@
       "when": 1784480604356,
       "tag": "0000_oval_dark_phoenix",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789674240724,
+      "tag": "0001_magical_scrambler",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789674248280,
+      "tag": "0002_force_workspace_isolation",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789674597507,
+      "tag": "0003_workspace_runtime_role",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789679276522,
+      "tag": "0004_hard_red_skull",
+      "breakpoints": true
     }
   ]
 }

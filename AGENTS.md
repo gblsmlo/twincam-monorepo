@@ -23,7 +23,10 @@ edited file. `pre-push` runs `lint:ci` and `typecheck`. CI runs those plus
 Pick validation proportional to the change and report an environmental blocker
 honestly instead of hiding it behind a green summary:
 
-- `bun run lint:ci`, `bun run typecheck`, `bun run test`: always.
+- `bun run lint:ci`, `bun run typecheck`, `bun run test`: always. Without
+  PostgreSQL, `bun run test:unit` runs the layer that does not need it and
+  `bun run test:integration` is the one that was skipped — say so instead of
+  reporting green.
 - `bun run storybook:test`: a component, pattern or story changed.
 - `bun run test:e2e`: a route, session or persistence journey changed.
 - `bun run build`, `docker compose build`: a Dockerfile, Compose file or
@@ -60,7 +63,11 @@ carries the operational detail.
   `/engineering-review` reviews, `/engineering-refactor` audits a delivered
   slice against the boundaries.
 - Reference feature: `apps/web/src/features/auth` in Web,
-  `apps/api/src/features/auth` in the API.
+  `apps/api/src/features/auth` in the API — the shape of a feature.
+- Reference vertical: `projects`, the one capability implemented across every
+  layer (Decision 018). Its slice README says what it proves and how to remove
+  it. A tenant-owned table follows it, including the isolation suite
+  (Decision 017).
 - Technology skills (React, TanStack, Elysia, Drizzle, Bun, HTTP, Playwright,
   Storybook) are installed globally from the maintainer's vault, not versioned
   here. A decision or guide in this repository always wins over them.

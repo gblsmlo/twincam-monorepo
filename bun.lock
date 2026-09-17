@@ -148,6 +148,7 @@
     "packages/infra/database": {
       "name": "@twincam/infra-database",
       "dependencies": {
+        "@twincam/core": "workspace:*",
         "@twincam/infra-env": "workspace:*",
         "@twincam/observability": "workspace:*",
         "better-auth": "^1.6.0",

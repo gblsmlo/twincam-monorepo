@@ -19,7 +19,7 @@
     }
   },
   "scripts": {
-    "build": "bun run --parallel --filter \"@twincam/*\" build",
+    "build": "bun run --filter \"@twincam/*\" build",
     "build:api": "bun --filter @twincam/api build",
     "build:web": "bun --filter @twincam/web build",
     "commit": "cz",
@@ -38,14 +38,16 @@
     "lint:unsafe": "biome check --unsafe --write .",
     "prepare": "husky",
     "storybook": "bun --filter @twincam/storybook storybook",
-    "storybook:build": "bun --filter @twincam/storybook storybook:build",
+    "storybook:build": "bun --filter @twincam/storybook build",
     "storybook:test": "bun --filter @twincam/storybook storybook:test",
     "test": "bun run --filter \"@twincam/*\" test",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
     "test:e2e:ui": "playwright test --ui --project=chromium --ui-port=0",
+    "test:integration": "bun --filter @twincam/api test:integration",
+    "test:unit": "bun run --filter \"@twincam/*\" test --path-ignore-patterns \"**/*.integration.test.ts\"",
     "toolchain:check": "sh scripts/check-toolchain.sh",
-    "typecheck": "bun run --parallel --filter \"@twincam/*\" typecheck && tsc -p scripts/tsconfig.json"
+    "typecheck": "bun run --filter \"@twincam/*\" typecheck && tsc -p tsconfig.e2e.json"
   },
   "config": {
     "commitizen": {

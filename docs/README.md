@@ -17,6 +17,7 @@ guide, other documents point to it instead of repeating it.
 | How do I implement changes in the API? | [API implementation guide](engineering/api-implementation-guide.md) |
 | How do I decide and validate persistence? | [Drizzle-first persistence](engineering/drizzle-first-persistence.md) |
 | How do I deliver a feature end to end? | [Feature delivery flow](engineering/feature-delivery-flow.md) |
+| What does a finished vertical slice look like here? | [The `projects` slice](../apps/api/src/features/projects/README.md), the reference implementation |
 | What is tested, and at which layer? | [Testing](engineering/testing.md) and [Test plan](engineering/test-plan.md) |
 | How do we protect access and data? | [Security](engineering/security.md) |
 | Idempotency, migrations and rollout? | [Operation](engineering/operation.md) |
